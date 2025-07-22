@@ -8,7 +8,6 @@ use App\Constant\TablesName;
 use App\API\EntityGetter\MeasurementUnit;
 use App\API\EntityGetter\Observation;
 use App\API\Helpers\ApiUtil;
-use App\OGC\Helpers\OgcUtil;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\HeaderBag;

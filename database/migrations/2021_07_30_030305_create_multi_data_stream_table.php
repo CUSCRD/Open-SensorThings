@@ -37,11 +37,51 @@ class CreateMultiDataStreamTable extends Migration
 
         DB::table(TablesName::MULTI_DATA_STREAM)
             ->insert([
-                'thingId'=>1,
-                'sensorId'=>1,
-                'name'=>'oven temperature',
-                'description'=>'This is a datastream measuring the air temperature in an oven.',
-                'observationType'=>1
+                'thingId' => 1,
+                'sensorId' => 1,
+                'name' => 'Light sensor',
+                'description' => 'This is a datastream measuring the light of env.',
+                'observationType' => 1
+            ]);
+        DB::table(TablesName::MULTI_DATA_STREAM)
+            ->insert([
+                'thingId' => 1,
+                'sensorId' => 2,
+                'name' => 'CO2 Sensor',
+                'description' => 'This is a datastream measuring the air temperature in an oven.',
+                'observationType' => 1
+            ]);
+        DB::table(TablesName::MULTI_DATA_STREAM)
+            ->insert([
+                'thingId' => 1,
+                'sensorId' => 3,
+                'name' => 'Temperature Sensor',
+                'description' => 'This is a datastream measuring the air temperature in an oven.',
+                'observationType' => 1
+            ]);
+        DB::table(TablesName::MULTI_DATA_STREAM)
+            ->insert([
+                'thingId' => 1,
+                'sensorId' => 4,
+                'name' => 'Humidity sensor',
+                'description' => 'This is a datastream measuring the air temperature in an oven.',
+                'observationType' => 1
+            ]);
+        DB::table(TablesName::MULTI_DATA_STREAM)
+            ->insert([
+                'thingId' => 2,
+                'sensorId' => 5,
+                'name' => 'Soil DS',
+                'description' => 'This is a datastream measuring the air temperature in an oven.',
+                'observationType' => 1
+            ]);
+        DB::table(TablesName::MULTI_DATA_STREAM)
+            ->insert([
+                'thingId' => 2,
+                'sensorId' => 1,
+                'name' => 'Soil DS',
+                'description' => 'Light sensor in almond tree from CUSC',
+                'observationType' => 1
             ]);
     }
 

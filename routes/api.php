@@ -33,7 +33,7 @@ Route::group(['middleware' => ['api']], function () {
     Route::post('/login', 'App\Http\Controllers\APIController@login');
     Route::get('/user', 'App\Http\Controllers\APIController@getCurrentUser');
     Route::post('/update', 'App\Http\Controllers\APIController@update');
-    Route::post('/logout', 'App\Http\Controllers\APIController@logout');
+    Route::get('/logout', 'App\Http\Controllers\APIController@logout');
     Route::post('/uploadImage', 'App\Http\Controllers\APIController@uploadImage');
 
     Route::middleware([EnsureTokenIsValid::class])->group(function () {
