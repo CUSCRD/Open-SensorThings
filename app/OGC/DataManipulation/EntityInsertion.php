@@ -127,7 +127,7 @@ class EntityInsertion
                 ]);
                 DB::table(TablesName::OBSERVATION)
                     ->where('dataStreamId', '=', $data['dataStreamId'])
-                    ->where('resultTime', '<', Carbon::now('GMT+7')->subMinutes(10))
+                    ->where('resultTime', '<', Carbon::now('GMT+7')->subWeek(2))
                     ->delete();
                 return $id;
             } catch (Exception $exception) {

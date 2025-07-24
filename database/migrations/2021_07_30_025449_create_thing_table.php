@@ -20,9 +20,9 @@ class CreateThingTable extends Migration
             $table->string('name');
             $table->string('description');
             $table->string('properties')->default(null)->nullable(true);
-            $table->bigInteger('id_user');
+            $table->unsignedBigInteger('id_user');
             $table->string('avt_image')->default(null)->nullable(true);
-            $table->bigInteger('id_location');
+            $table->unsignedBigInteger('id_location');
             $table->foreign('id_user')->references('id')->on(TablesName::Users)->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreign('id_location')->references('id')->on(TablesName::LOCATION)->cascadeOnUpdate()->cascadeOnDelete();
         });
@@ -38,7 +38,7 @@ class CreateThingTable extends Migration
         DB::table(TablesName::THING)
             ->insert([
                 'name' => 'Campus garden CUSC',
-                'id_user' => 1,
+                'id_user' => 9,
                 'avt_image' => 'https://fms-laravel-images.s3.ap-southeast-1.amazonaws.com/images/uJP1tka58h1FEbs0HFRSRFYIVIGrItS5BsQYbg3d.jpg',
                 'description' => 'This is an campus from CUSC in CTU',
                 'properties' => '{"owner":"CUSC","address":"1 Ly Tu Trong","province":"Can Tho","district":"Ninh Kieu","ward":"Xuan Khanh"}',
@@ -47,7 +47,7 @@ class CreateThingTable extends Migration
         DB::table(TablesName::THING)
             ->insert([
                 'name' => 'Almond tree CUSC',
-                'id_user' => 1,
+                'id_user' => 9,
                 'avt_image' => 'https://fms-laravel-images.s3.ap-southeast-1.amazonaws.com/images/Ag21gNjHy5GyPHu7JlZK8GNAchkC9qYCHQYdqMRG.jpg',
                 'description' => 'This is an Almond tree from CUSC in CTU',
                 'properties' => '{"owner":"CUSC","address":"1 Ly Tu Trong","province":"Can Tho","district":"Ninh Kieu","ward":"Xuan Khanh"}',

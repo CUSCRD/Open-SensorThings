@@ -10,7 +10,8 @@ use Illuminate\Database\Query\Builder;
 
 class EntityQuery
 {
-    protected const DEFAULT_STEP = 1;
+    // protected const DEFAULT_STEP = 1; v2.0
+    protected const DEFAULT_STEP = 5;
 
 
     /**
@@ -195,10 +196,9 @@ class EntityQuery
         $resultHandleSelect = EntitySelecting::handleSelectQuery($controller, $builder, $cloneBuilder, $closestCollectionName, $requestParameter, $resultFormat);
         $idRebuild = $resultHandleSelect['idRebuild'];
         $result = $resultHandleSelect['result'];
-        return ($result);
+        // return ($result); v2.0
         $components = $resultHandleSelect['components'];
         $count = $resultHandleSelect['count'] ?? null;
-        //ko vao expand
         //có expand
         if ($isExpand) {
             static::expand($controller, $idRebuild, $cloneBuilder, $requestUrl, $closestCollectionName, $result, $requestParameter);
@@ -217,7 +217,11 @@ class EntityQuery
         if (isset($requestParameter['order']) && $requestParameter['order'] != '') {
             static::orderBy($controller, $builder, $requestParameter['order'], $closestCollectionName);
         } else {
-            $builder->orderBy('id', 'desc');
+            // $builder->orderBy('id', 'desc'); v2.0
+            // nếu k có order trong query string thì để thứ tự mặc định khi lấy trong db ra để tránh lỗi
+            // sử dụng mệnh đề ORDER BY với cột không nằm trong danh sách SELECT khi sử dụng DISTINCT
+            // do đó nếu k chỉ định order thì sẽ k thực hiện gì cả
+            // $builder->orderBy('id');
         }
         if (isset($requestParameter['top']) && $requestParameter['top'] != '') {
             if (is_numeric($requestParameter['top'])) {
@@ -253,21 +257,21 @@ class EntityQuery
     {
         //count xảy ra vấn đề
         $countEntity = $count == null ? static::countEntity(count($result), $requestParameter) : $count;
-        // if ($expandId == null) {
-        //     // $result = ['value' => $result];
-        //     $result = [$result];
-        // }
-        // $paging = static::paging($requestUrl, $max, $requestParameter);
-        // if ($component != null) {
-        //     return array_merge($countEntity, ['components' => $component], $result, $paging);
-        // } else {
-        //     return array_merge($countEntity, $result, $paging);
-        // }
-        if ($component != null) {
-            return array_merge($countEntity, ['components' => $component], $result);
-        } else {
-            return array_merge($countEntity, $result);
+        if ($expandId == null) {
+            $result = ['value' => $result];
+            // $result = [$result];
         }
+        $paging = static::paging($requestUrl, $max, $requestParameter);
+        if ($component != null) {
+            return array_merge($countEntity, ['components' => $component], $result, $paging);
+        } else {
+            return array_merge($countEntity, $result, $paging);
+        }
+        // if ($component != null) {
+        //     return array_merge($countEntity, ['components' => $component], $result);
+        // } else {
+        //     return array_merge($countEntity, $result);
+        // } v2.0
     }
     /**
      * @throws Exception

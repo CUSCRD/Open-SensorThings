@@ -78,6 +78,9 @@ abstract class BaseEntity implements ApiEntityNavigation
                             case Sensor::PATH_VARIABLE_NAME:
                                 $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
                                 break;
+                            case Location::PATH_VARIABLE_NAME:
+                                $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                break;
                                 //TASKING
                             case Actuator::PATH_VARIABLE_NAME:
                                 $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
@@ -109,8 +112,50 @@ abstract class BaseEntity implements ApiEntityNavigation
                             if (isset($tables[$i]['id']) && $tables[$i]['id'] != null) {
                                 $id = $tables[$i]['id'];
                                 if ($id != null) {
-                                    $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
-
+                                    // $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id); v2.0
+                                    switch ($collectionName) {
+                                            //SENSING
+                                        case Thing::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(
+                                                EntityPropertyGetter::getJoinName($collectionName) . '.id',
+                                                '=',
+                                                $id
+                                            );
+                                            break;
+                                        case MultiDataStream::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case Observation::PATH_VARIABLE_NAME;
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case MeasurementUnit::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case ObservationType::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case ObservedProperty::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case Sensor::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case Location::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                            //TASKING
+                                        case Actuator::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case TaskingCapabilities::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        case Task::PATH_VARIABLE_NAME:
+                                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                                            break;
+                                        default:
+                                            throw new Exception('Invalid Path', 404);
+                                    }
                                     //id ở sub path không tồn tại
                                     if ($builder->count() == 0) {
                                         throw new Exception('id is not exist', 404);
@@ -147,7 +192,50 @@ abstract class BaseEntity implements ApiEntityNavigation
                 }
                 //                echo json_encode((clone $builder)->get());
                 if ($id != null) {
-                    $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                    // $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id); v2.0
+                    switch ($collectionName) {
+                            //SENSING
+                        case Thing::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(
+                                EntityPropertyGetter::getJoinName($collectionName) . '.id',
+                                '=',
+                                $id
+                            );
+                            break;
+                        case MultiDataStream::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case Observation::PATH_VARIABLE_NAME;
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case MeasurementUnit::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case ObservationType::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case ObservedProperty::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case Sensor::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case Location::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                            //TASKING
+                        case Actuator::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case TaskingCapabilities::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        case Task::PATH_VARIABLE_NAME:
+                            $builder = $builder->where(EntityPropertyGetter::getJoinName($collectionName) . '.id', '=', $id);
+                            break;
+                        default:
+                            throw new Exception('Invalid Path', 404);
+                    }
                 }
             }
         }

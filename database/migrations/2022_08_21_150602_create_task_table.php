@@ -17,7 +17,7 @@ class CreateTaskTable extends Migration
     {
         Schema::create('task', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('taskingParameters');
+            $table->integer('taskingParameters');
             $table->timestamps();
 
             $table->foreign('id')
@@ -30,6 +30,11 @@ class CreateTaskTable extends Migration
         DB::table(TablesName::TASK)
             ->insert([
                 'id' => 11,
+                'taskingParameters' => -1
+            ]);
+            DB::table(TablesName::TASK)
+            ->insert([
+                'id' => 19,
                 'taskingParameters' => -1
             ]);
     }

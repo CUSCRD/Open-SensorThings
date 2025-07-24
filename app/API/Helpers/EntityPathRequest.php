@@ -19,7 +19,8 @@ class EntityPathRequest
         if ($parameters != null) {
             $analyzeResult = [];
             foreach ($parameters as $key => $value) {
-                $analyzeResult[substr($key, 0)] = $value;
+                // $analyzeResult[substr($key, 0)] = $value; v2.0
+                $analyzeResult[substr($key, 1)] = $value;
             }
             return $analyzeResult;
         }

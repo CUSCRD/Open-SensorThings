@@ -77,6 +77,17 @@ class ObservationType extends BaseEntity
         MultiDataStream::toObservedProperty($builder);
         return $builder;
     }
+
+    public static function toLocation(Builder $builder = null): Builder
+    {
+        if ($builder == null) {
+            $builder = static::toDataStream();
+        }
+        MultiDataStream::toThing($builder);
+        Thing::toLocation($builder);
+        return $builder;
+    }
+
     public static function joinTo(string $pathVariableItem, Builder $builder = null): Builder
     {
         switch ($pathVariableItem) {
@@ -97,7 +108,11 @@ class ObservationType extends BaseEntity
                 break;
             case ObservedProperty::PATH_VARIABLE_NAME:
                 $builder = static::toObservedProperty($builder);
-                break;     //tasking
+                break;
+            case Location::PATH_VARIABLE_NAME:
+                $builder = static::toLocation($builder);
+                break;
+                //tasking
             case Actuator::PATH_VARIABLE_NAME:
                 $builder = static::toActuator($builder);
                 break;

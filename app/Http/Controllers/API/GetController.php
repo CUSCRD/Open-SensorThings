@@ -13,6 +13,7 @@ use App\API\EntityGetter\Sensor;
 use App\API\EntityGetter\TaskingCapabilities;
 use App\API\EntityGetter\Thing;
 use App\API\EntityGetter\Actuator;
+use App\API\EntityGetter\Location;
 use App\API\EntityGetter\Task;
 use App\API\EntityGetter\User;
 use App\API\Helpers\EntityPathRequest;
@@ -52,7 +53,10 @@ class GetController
             case Thing::PATH_VARIABLE_NAME:
                 $controller = new Thing();
                 break;
-            case TaskingCapabilities::PATH_VARIABLE_NAME:
+            case Location::PATH_VARIABLE_NAME:
+                $controller = new Location();
+                break;
+            case TaskingCapabilities::PATH_VARIABLE_NAME: // ver 2.0
                 $controller = new TaskingCapabilities();
                 break;
             case Actuator::PATH_VARIABLE_NAME:
@@ -103,14 +107,15 @@ class GetController
             return response()->json(['error' => $exception->getMessage()], $exception->getCode());
         }
         $arrayRequest = $request->toArray();
-        $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . '/' . PathName::GET . '/' . $path;
+        $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . '/api' . '/' . PathName::GET . '/' . $path;
         $analyzeRequestParam = EntityPathRequest::analyzeRequestParam($arrayRequest);
         try {
             $ketQua = EntityQuery::getQueryRequestResult($controller, $builder, $pathVariable['last'], $url, $analyzeRequestParam);
             if ($pathVariable['first'] == 'things' && $pathVariable['last'] == 'actuator') {
                 $ketQua = static::getStatusActuator($ketQua, $pathVariable['pathParams'][0]['id']);
             }
-            return response()->json($ketQua);
+            // return response()->json($ketQua); v2.0
+            return response()->json($ketQua, 200);
         } catch (Exception $exception) {
             $code = $exception->getCode();
             if (is_numeric($code) && $code >= 100 && $code < 600) {

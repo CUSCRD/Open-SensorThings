@@ -67,22 +67,25 @@ class CreateMultiDataStreamTable extends Migration
                 'description' => 'This is a datastream measuring the air temperature in an oven.',
                 'observationType' => 1
             ]);
+
+        DB::table(TablesName::MULTI_DATA_STREAM)
+        ->insert([
+            'thingId' => 2,
+            'sensorId' => 1,
+            'name' => 'Light DS',
+            'description' => 'Light sensor in almond tree from CUSC',
+            'observationType' => 1
+        ]);
+
         DB::table(TablesName::MULTI_DATA_STREAM)
             ->insert([
                 'thingId' => 2,
                 'sensorId' => 5,
                 'name' => 'Soil DS',
-                'description' => 'This is a datastream measuring the air temperature in an oven.',
+                'description' => 'Soild= sensor in almond tree from CUSC',
                 'observationType' => 1
-            ]);
-        DB::table(TablesName::MULTI_DATA_STREAM)
-            ->insert([
-                'thingId' => 2,
-                'sensorId' => 1,
-                'name' => 'Soil DS',
-                'description' => 'Light sensor in almond tree from CUSC',
-                'observationType' => 1
-            ]);
+        ]);
+        
     }
 
     /**

@@ -21,7 +21,7 @@ class CreateTaskingCapabilityTable extends Migration
             $table->unsignedBigInteger('thing_id');
             $table->string('name')->nullable(false);
             $table->string('description');
-            $table->string('properties');
+            $table->json('taskingParameters');
             $table->timestamps();
 
             $table->foreign('actuator_id')
@@ -41,7 +41,9 @@ class CreateTaskingCapabilityTable extends Migration
             ->insert([
                 'id' => 11,
                 'actuator_id' => 2,
-                'thing_id ' => 2,
+                'name' => 'Control Light',
+                'description' => 'Turn the light on and off, as well as specifying light color.',
+                'thing_id' => 2,
                 'taskingParameters' => '{
                                             "type": "DataRecord",
                                             "field": [
@@ -71,6 +73,33 @@ class CreateTaskingCapabilityTable extends Migration
                                             ]
                                         }'
             ]);
+
+            DB::table(TablesName::TASKINGCAPABILITY)
+            ->insert([
+                'id' => 19,
+                'actuator_id' => 7,
+                'name' => 'Control Valve',
+                'description' => 'Turn the Valve on and off',
+                'thing_id' => 2,
+                'taskingParameters' => '{
+                                            "type": "DataRecord",
+                                            "field": [
+                                                {
+                                                    "name": "status",
+                                                    "type": "Category",
+                                                    "label": "On/Off status",
+                                                    "constraint": {
+                                                        "type": "AllowedTokens",
+                                                        "value": [
+                                                            "on",
+                                                            "off"
+                                                        ]
+                                                    },
+                                                    "description": "Specifies turning the valve On or Off"
+                                                }
+                                            ]
+                                        }'
+            ]);
     }
 
     /**
@@ -80,6 +109,8 @@ class CreateTaskingCapabilityTable extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists(TablesName::THING);
+        Schema::dropIfExists(TablesName::TASK);
         Schema::dropIfExists('_tasking_capability');
     }
 }

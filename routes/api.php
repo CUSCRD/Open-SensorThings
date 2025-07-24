@@ -5,6 +5,7 @@ use App\Constant\UserRolesFixedData;
 use App\Http\Controllers\API\GetController;
 use App\Http\Middleware\EnsureTokenIsValid;
 use App\API\EntityGetter\Observation;
+use App\Http\Controllers\API\ApiRootController;
 use App\Http\Controllers\API\BatchController;
 use App\Http\Controllers\API\DeleteController;
 use App\Http\Controllers\API\PatchController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\API\PostController;
 use App\Http\Controllers\API\IoTController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OGC;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +35,7 @@ Route::group(['middleware' => ['api']], function () {
     Route::post('/login', 'App\Http\Controllers\APIController@login');
     Route::get('/user', 'App\Http\Controllers\APIController@getCurrentUser');
     Route::post('/update', 'App\Http\Controllers\APIController@update');
-    Route::get('/logout', 'App\Http\Controllers\APIController@logout');
+    Route::post('/logout', 'App\Http\Controllers\APIController@logout');
     Route::post('/uploadImage', 'App\Http\Controllers\APIController@uploadImage');
 
     Route::middleware([EnsureTokenIsValid::class])->group(function () {
@@ -45,17 +47,18 @@ Route::group(['middleware' => ['api']], function () {
         // Route::post(PathName::POST . '/' . PathName::CREATE_OBSERVATION, [API\PostController::class, "sensorPost"])
         // ->middleware(['auth.rest:' . UserRolesFixedData::REST_SENSOR['id']]);
         //sensor
-        Route::post(PathName::POST . '/' . Observation::PATH_VARIABLE_NAME, [API\PostController::class, "sensorPost"])
+        Route::post(PathName::POST . '/' . Observation::PATH_VARIABLE_NAME, [PostController::class, "sensorPost"])
             ->middleware(['auth.rest:' . UserRolesFixedData::REST_SENSOR['id']]);
-        Route::post(PathName::POST . '/' . PathName::CREATE_OBSERVATION, [API\PostController::class, "sensorPost"])
+        Route::post(PathName::POST . '/' . PathName::CREATE_OBSERVATION, [PostController::class, "sensorPost"])
             ->middleware(['auth.rest:' . UserRolesFixedData::REST_SENSOR['id']]);
+
 
 
         //client
         Route::post(PathName::POST . '/{params?}', [PostController::class, "action"])
             ->where('params', '^(?!.*' . Observation::PATH_VARIABLE_NAME . '(\(\d+\)(\/)?)?$).*$');
 
-        Route::post(PathName::BATCH, [BatchController::class, 'action']);
+        Route::post(PathName::BATCH, [OGC\BatchController::class, 'action']);
 
         Route::patch(PathName::PATCH . '/{params?}', [PatchController::class, 'action'])
             ->where('params', '^(?!.*' . Observation::PATH_VARIABLE_NAME . '(\(\d+\)(\/)?)?$).*$');
@@ -68,5 +71,7 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get(PathName::ID . '/{params?}', [IoTController::class, 'action'])
             ->where('params', '(.*)');
+
+        Route::get('/', [ApiRootController::class, 'action']);
     });
 });
