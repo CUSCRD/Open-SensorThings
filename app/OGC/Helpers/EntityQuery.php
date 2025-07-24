@@ -10,7 +10,7 @@ use Illuminate\Database\Query\Builder;
 
 class EntityQuery
 {
-    protected const DEFAULT_STEP=20;
+    protected const DEFAULT_STEP = 20;
 
 
     /**
@@ -30,8 +30,9 @@ class EntityQuery
      *
      * @throws Exception
      */
-    public static function orderBy(BaseEntity $controller, Builder $builder, string $order, string $latestTablePathItem, string $defaultOrder='asc'):Builder{
-        return EntityOrdering::orderBy($controller,$builder,$order,$latestTablePathItem,$defaultOrder);
+    public static function orderBy(BaseEntity $controller, Builder $builder, string $order, string $latestTablePathItem, string $defaultOrder = 'asc'): Builder
+    {
+        return EntityOrdering::orderBy($controller, $builder, $order, $latestTablePathItem, $defaultOrder);
     }
 
     /**
@@ -47,13 +48,12 @@ class EntityQuery
      */
     public static function top(Builder $builder, $top): Builder
     {
-        if ($top!=(int)$top || $top<0){
+        if ($top != (int)$top || $top < 0) {
             throw new Exception("top value should be non-negative integer");
-        }else{
+        } else {
             $builder->limit($top);
             return $builder;
         }
-
     }
 
     /**
@@ -73,24 +73,24 @@ class EntityQuery
      *
      * @throws Exception
      */
-    public static function countEntity(int $count,array $requestParameter=null): array
+    public static function countEntity(int $count, array $requestParameter = null): array
     {
 
-        if(isset($requestParameter['count'])){
-            if($requestParameter['count']=='true'){
-                $countEntity= ['count'=>$count];
-            }else{
-                if($requestParameter['count']!='false'){
+        if (isset($requestParameter['count'])) {
+            if ($requestParameter['count'] == 'true') {
+                $countEntity = ['count' => $count];
+            } else {
+                if ($requestParameter['count'] != 'false') {
                     //return lỗi 400 bad request
-                    throw new Exception('"count" query value must be true or false',400);
-                }else{
+                    throw new Exception('"count" query value must be true or false', 400);
+                } else {
                     //false
-                    $countEntity=[];
+                    $countEntity = [];
                 }
             }
-        }ELSE{
+        } else {
             //không count
-            $countEntity=[];
+            $countEntity = [];
         }
         return $countEntity;
     }
@@ -104,11 +104,11 @@ class EntityQuery
      *
      * [Note: Adapted from OData 4.0-Protocol 11.2.5.4]
      * */
-    public static function skip(Builder $builder,$skip): Builder
+    public static function skip(Builder $builder, $skip): Builder
     {
-        if ($skip==(int)$skip && $skip>=0){
+        if ($skip == (int)$skip && $skip >= 0) {
             return $builder->skip($skip);
-        }else{
+        } else {
             throw new Exception("skip value must be non-negative integer");
         }
     }
@@ -126,33 +126,33 @@ class EntityQuery
      * Service có thể không cho phép thay đổi format yêu cầu cho các page tiếp theo sử dụng next link
      *
      * */
-    public static function paging(string $path,int $max, array $query=null): array
+    public static function paging(string $path, int $max, array $query = null): array
     {
-        if($path==''){
+        if ($path == '') {
             return [];
         }
-        if($query==null){
-            $query=[];
+        if ($query == null) {
+            $query = [];
         }
-        if(!isset($query['top'])){
-            $query['top']=static::DEFAULT_STEP;
+        if (!isset($query['top'])) {
+            $query['top'] = static::DEFAULT_STEP;
         }
-        if(isset($query['skip'])){
-            $skip=$query['skip'];
-            $skip+=$query['top'];
-        }else{
-            $skip=$query['top'];
+        if (isset($query['skip'])) {
+            $skip = $query['skip'];
+            $skip += $query['top'];
+        } else {
+            $skip = $query['top'];
         }
-        if($skip>=$max){
+        if ($skip >= $max) {
             return [];
-        }else{
-            $query['skip']=$skip;
+        } else {
+            $query['skip'] = $skip;
         }
-        $q="";
-        foreach ($query as $key=>$value){
-            $q.='$' . $key.'='.$value . '&';
+        $q = "";
+        foreach ($query as $key => $value) {
+            $q .= '$' . $key . '=' . $value . '&';
         }
-        return ['nextLink'=>rtrim($path,'/') . '?' . substr($q,0,-1)];
+        return ['nextLink' => rtrim($path, '/') . '?' . substr($q, 0, -1)];
     }
     /**
      * Theo tài liệu OGC,
@@ -177,168 +177,172 @@ class EntityQuery
      *
      * @throws Exception
      */
-    public static function getQueryRequestResult(BaseEntity $controller,
-                                                 Builder $builder,
-                                                 string $closestCollectionName,
-                                                 string $requestUrl,
-                                                 array $requestParameter=null,
-                                                 string $expandId=null,
-                                                 string $rootCollectionName=null): array
-    {
+    public static function getQueryRequestResult(
+        BaseEntity $controller,
+        Builder $builder,
+        string $closestCollectionName,
+        string $requestUrl,
+        array $requestParameter = null,
+        string $expandId = null,
+        string $rootCollectionName = null
+    ): array {
 
-        $resultSimpleQuery=static::simpleQuery($controller,$builder,$closestCollectionName,$requestParameter,$expandId,$rootCollectionName);
-        $cloneBuilder=$resultSimpleQuery['cloneBuilder'];
-        $max=$resultSimpleQuery['max'];
-        $validateResult=static::validateFormatExpand($closestCollectionName,$requestParameter);
-        $resultFormat=$validateResult['resultFormat'];
-        $isExpand=$validateResult['isExpand'];
+        $resultSimpleQuery = static::simpleQuery($controller, $builder, $closestCollectionName, $requestParameter, $expandId, $rootCollectionName);
+        $cloneBuilder = $resultSimpleQuery['cloneBuilder'];
+        $max = $resultSimpleQuery['max'];
+        $validateResult = static::validateFormatExpand($closestCollectionName, $requestParameter);
+        $resultFormat = $validateResult['resultFormat'];
+        $isExpand = $validateResult['isExpand'];
 
-        $resultHandleSelect=EntitySelecting::handleSelectQuery($controller,$builder,$cloneBuilder,$closestCollectionName,$requestParameter,$resultFormat);
-        $idRebuild=$resultHandleSelect['idRebuild'];
-        $result=$resultHandleSelect['result'];
-        $components=$resultHandleSelect['components'];
-        $count=$resultHandleSelect['count']??null;
+        $resultHandleSelect = EntitySelecting::handleSelectQuery($controller, $builder, $cloneBuilder, $closestCollectionName, $requestParameter, $resultFormat);
+        $idRebuild = $resultHandleSelect['idRebuild'];
+        $result = $resultHandleSelect['result'];
+        $components = $resultHandleSelect['components'];
+        $count = $resultHandleSelect['count'] ?? null;
 
         //có expand
-        if($isExpand){
-            static::expand($controller,$idRebuild,$cloneBuilder,$requestUrl,$closestCollectionName,$result,$requestParameter);
+        if ($isExpand) {
+            static::expand($controller, $idRebuild, $cloneBuilder, $requestUrl, $closestCollectionName, $result, $requestParameter);
         }
 
-        return static::exportResult($result,$requestUrl,$max,$requestParameter,$expandId,$components,$count);
-
+        return static::exportResult($result, $requestUrl, $max, $requestParameter, $expandId, $components, $count);
     }
 
     /**
      * @throws Exception
      */
-    private static function simpleQuery(BaseEntity $controller, Builder $builder, string $closestCollectionName, array $requestParameter=null, string $expandId=null, string $rootCollectionName=null): array
+    private static function simpleQuery(BaseEntity $controller, Builder $builder, string $closestCollectionName, array $requestParameter = null, string $expandId = null, string $rootCollectionName = null): array
     {
-        if(isset($requestParameter['filter']) && $requestParameter['filter']!=''){
-            EntityFiltering::filter2($controller,$builder,$requestParameter['filter'],$closestCollectionName);
+        if (isset($requestParameter['filter']) && $requestParameter['filter'] != '') {
+            EntityFiltering::filter2($controller, $builder, $requestParameter['filter'], $closestCollectionName);
         }
-        if(isset($requestParameter['order']) && $requestParameter['order']!=''){
-            static::orderBy($controller,$builder,$requestParameter['order'],$closestCollectionName);
-        }else{
+        if (isset($requestParameter['order']) && $requestParameter['order'] != '') {
+            static::orderBy($controller, $builder, $requestParameter['order'], $closestCollectionName);
+        } else {
             $builder->orderBy('id');
         }
-        if(isset($requestParameter['top']) && $requestParameter['top']!=''){
-            if (is_numeric($requestParameter['top'])){
-                static::top($builder,$requestParameter['top']);
-            }elseif (strtolower($requestParameter['top'])=='all'){
+        if (isset($requestParameter['top']) && $requestParameter['top'] != '') {
+            if (is_numeric($requestParameter['top'])) {
+                static::top($builder, $requestParameter['top']);
+            } elseif (strtolower($requestParameter['top']) == 'all') {
                 //do nothing
                 //không chỉ định limit, lấy toàn bộ kết quả
-            }else{
+            } else {
                 throw new Exception('invalid $top parameter: ' . $requestParameter['top']);
             }
-        }else{
+        } else {
             $builder->take(static::DEFAULT_STEP);
         }
 
-        if($expandId!=null){
-            $builder->where(EntityPropertyGetter::getJoinName($rootCollectionName).'.'.'id','=',$expandId)->distinct();
+        if ($expandId != null) {
+            $builder->where(EntityPropertyGetter::getJoinName($rootCollectionName) . '.' . 'id', '=', $expandId)->distinct();
         }
 
         //skip/offset sẽ gây sai lệch cho truy vấn expand (do dựa vào id của entity để truy vấn tiếp)
         //nên phải sao chép lại builder
-        $cloneBuilder=$builder->clone();
+        $cloneBuilder = $builder->clone();
 
-        $max=$builder->count();
-        if(isset($requestParameter['skip']) && $requestParameter['skip']!=''){
-            static::skip($builder,$requestParameter['skip']);
+        $max = $builder->count();
+        if (isset($requestParameter['skip']) && $requestParameter['skip'] != '') {
+            static::skip($builder, $requestParameter['skip']);
         }
-        return['cloneBuilder'=>$cloneBuilder,'max'=>$max];
+        return ['cloneBuilder' => $cloneBuilder, 'max' => $max];
     }
 
     /**
      * @throws Exception
      */
-    private static function exportResult(array $result, string $requestUrl, int $max, array $requestParameter=null, bool $expandId=null, array $component=null,array $count=null): array
+    private static function exportResult(array $result, string $requestUrl, int $max, array $requestParameter = null, bool $expandId = null, array $component = null, array $count = null): array
     {
         //count xảy ra vấn đề
-        $countEntity=$count==null?static::countEntity(count($result),$requestParameter):$count;
-        if($expandId==null){
-            $result=['value'=>$result];
+        $countEntity = $count == null ? static::countEntity(count($result), $requestParameter) : $count;
+        if ($expandId == null) {
+            $result = ['value' => $result];
         }
-        $paging=static::paging($requestUrl,$max,$requestParameter);
-        if($component!=null){
-            return array_merge($countEntity,['components'=>$component],$result,$paging);
-        }else{
-            return array_merge($countEntity,$result,$paging);
+        $paging = static::paging($requestUrl, $max, $requestParameter);
+        if ($component != null) {
+            return array_merge($countEntity, ['components' => $component], $result, $paging);
+        } else {
+            return array_merge($countEntity, $result, $paging);
         }
     }
     /**
      * @throws Exception
      */
-    private static function expand(BaseEntity $controller,
-                                   array $idRebuild,
-                                   Builder $cloneBuilder,
-                                   string $requestUrl,
-                                   string $closestCollectionName,
-                                   array $result,
-                                   array $requestParameter=null){
+    private static function expand(
+        BaseEntity $controller,
+        array $idRebuild,
+        Builder $cloneBuilder,
+        string $requestUrl,
+        string $closestCollectionName,
+        array $result,
+        array $requestParameter = null
+    ) {
 
-        $expandArr=$requestParameter['expand'];
-        $expandArr=EntityPathRequest::separateExpand($expandArr);
-        foreach ($expandArr as $item){
-            $itemExpand=EntityPathRequest::analyzeExpand($item);
-            $countResult=count($idRebuild);
-            for($i=0;$i<$countResult;$i++){
-                $tempBuilder=clone $cloneBuilder;
-                $controller->paramBuilder($itemExpand['path']['pathParams'],$tempBuilder);
+        $expandArr = $requestParameter['expand'];
+        $expandArr = EntityPathRequest::separateExpand($expandArr);
+        foreach ($expandArr as $item) {
+            $itemExpand = EntityPathRequest::analyzeExpand($item);
+            $countResult = count($idRebuild);
+            for ($i = 0; $i < $countResult; $i++) {
+                $tempBuilder = clone $cloneBuilder;
+                $controller->paramBuilder($itemExpand['path']['pathParams'], $tempBuilder);
 
                 //xóa entityid ở resource path nếu có
-                $indexChar=strripos($requestUrl,'(');
-                if($indexChar){
-                    $requestUrl1=substr($requestUrl,0,$indexChar);
-                }else{
-                    $requestUrl1=$requestUrl;
+                $indexChar = strripos($requestUrl, '(');
+                if ($indexChar) {
+                    $requestUrl1 = substr($requestUrl, 0, $indexChar);
+                } else {
+                    $requestUrl1 = $requestUrl;
                 }
 
-                $resultExpand=static::getQueryRequestResult($controller,
+                $resultExpand = static::getQueryRequestResult(
+                    $controller,
                     $tempBuilder,
                     $itemExpand['path']['last'],
-                    $requestUrl1."($idRebuild[$i])/" . EntityPathRequest::pathArrayToString($itemExpand['path']['pathParams']),
+                    $requestUrl1 . "($idRebuild[$i])/" . EntityPathRequest::pathArrayToString($itemExpand['path']['pathParams']),
                     $itemExpand['queries'],
                     $idRebuild[$i],
-                    $closestCollectionName);
-                $entityName=$itemExpand['path']['last'];
-                $result[$i]->$entityName=$resultExpand;
+                    $closestCollectionName
+                );
+                $entityName = $itemExpand['path']['last'];
+                $result[$i]->$entityName = $resultExpand;
             }
         }
     }
     /**
      * @throws Exception
      */
-    private static function validateFormatExpand(string $closestCollectionName,array $requestParameter=null): array
+    private static function validateFormatExpand(string $closestCollectionName, array $requestParameter = null): array
     {
 
         //kiểm tra xung đột resultFormat và expand
-        if(isset($requestParameter['resultFormat']) && $requestParameter['resultFormat']!=null){
+        if (isset($requestParameter['resultFormat']) && $requestParameter['resultFormat'] != null) {
             //nếu không làm việc với Observation thì sẽ ném ngoại lệ
-            if ($closestCollectionName!=Observation::PATH_VARIABLE_NAME){
-                throw new Exception('result format only working with Observations entities',405);
+            if ($closestCollectionName != Observation::PATH_VARIABLE_NAME) {
+                throw new Exception('result format only working with Observations entities', 405);
             }
-            $resultFormat=$requestParameter['resultFormat'];
+            $resultFormat = $requestParameter['resultFormat'];
             //xác thực result format
             // kiểm tra nó có là query hợp lệ không
-            $validateRF=[
+            $validateRF = [
                 'dataArray'
             ];
-            if(!in_array($resultFormat,$validateRF)){
-                throw new Exception('invalid result format',400);
+            if (!in_array($resultFormat, $validateRF)) {
+                throw new Exception('invalid result format', 400);
             }
-        }else{
-            $resultFormat=null;
+        } else {
+            $resultFormat = null;
         }
-        if(isset($requestParameter['expand']) && $requestParameter['expand']!=null){
-            if($resultFormat!=null){
-                throw new Exception('both expand and resultFormat are queried',400);
-            }else{
-                $isExpand=true;
+        if (isset($requestParameter['expand']) && $requestParameter['expand'] != null) {
+            if ($resultFormat != null) {
+                throw new Exception('both expand and resultFormat are queried', 400);
+            } else {
+                $isExpand = true;
             }
-        }else{
-            $isExpand=false;
+        } else {
+            $isExpand = false;
         }
-        return ['resultFormat'=>$resultFormat,'isExpand'=>$isExpand];
+        return ['resultFormat' => $resultFormat, 'isExpand' => $isExpand];
     }
 }

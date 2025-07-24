@@ -28,6 +28,7 @@ class CreateSensorEncodingTypeTable extends Migration
     public function down()
     {
         Schema::dropIfExists(TablesName::SENSOR);
+        Schema::dropIfExists(TablesName::ACTUATOR);
         Schema::dropIfExists(TablesName::ENCODING_TYPE);
     }
 }

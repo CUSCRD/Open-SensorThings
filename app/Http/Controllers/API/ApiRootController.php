@@ -13,8 +13,12 @@ class ApiRootController
 {
     public function action(): JsonResponse
     {
-        $id = auth()->id();
-        $arrCon = static::getConformance($id);
+        // $id = auth()->id(); v2.0
+        // $arrCon = static::getConformance($id); v2.0
+        $userToken = request()->header('token');
+        $userId = DB::table('users')->where('remember_token', $userToken)->first('id')->id;
+
+        $arrCon = static::getConformance($userId);
         $arrUrl = EntityClasses::entityList();
 
         $result = [

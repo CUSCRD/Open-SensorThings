@@ -1,82 +1,105 @@
 <?php
 
 
-namespace App\OGC\EntityGetter;
+namespace App\API\EntityGetter;
 
 
 use App\Constant\TablesName;
 use Exception;
 use Illuminate\Database\Query\Builder;
 
-class Thing extends BaseEntity
+class Location extends BaseEntity
 {
-    public const TABLE_NAME = TablesName::THING;
-    public const JOIN_NAME = 't';
+    public const TABLE_NAME = TablesName::LOCATION;
+    public const JOIN_NAME = 'l';
     public const JOIN_GET =
     [
         self::JOIN_NAME . '.id',
         self::JOIN_NAME . '.name',
         self::JOIN_NAME . '.description',
-        self::JOIN_NAME . '.properties',
+        self::JOIN_NAME . '.coordinates',
+        self::JOIN_NAME . '.created_at',
+        self::JOIN_NAME . '.updated_at',
     ];
+
     public const PROPERTIES = [
         'id',
         'name',
         'description',
-        'properties',
+        'coordinates',
+        'created_at',
+        'updated_at',
     ];
-    public const PATH_VARIABLE_NAME = 'things';
+
+    public const PATH_VARIABLE_NAME = 'locations';
+
+    public static function toThing(Builder $builder = null): Builder
+    {
+        if ($builder == null) {
+            $builder = static::selfBuilder();
+        }
+
+        return static::joinTable(
+            $builder,
+            static::JOIN_NAME,
+            Thing::TABLE_NAME,
+            Thing::JOIN_NAME,
+            'id',
+            'id_location'
+        );
+    }
+
     public static function toDataStream(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = self::selfBuilder();
+            $builder = static::toThing();
         }
-        static::joinTable(
-            $builder,
-            static::JOIN_NAME,
-            MultiDataStream::TABLE_NAME,
-            MultiDataStream::JOIN_NAME,
-            'id',
-            'thingId'
-        );
-        //        static::joinTable($builder,'dst',MultiDataStream::TABLE_NAME,MultiDataStream::JOIN_NAME,'dataStreamId','id');
-        return MultiDataStream::refObservationType($builder);
+        return Thing::toDataStream($builder);
     }
+
     public static function toObservation(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = static::toDataStream();
+            $builder = static::toThing();
         }
+        Thing::toDataStream($builder);
         return MultiDataStream::toObservation($builder);
     }
+
     public static function toMeasurementUnit(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = static::toDataStream();
+            $builder = static::toThing();
         }
+        Thing::toDataStream($builder);
         return MultiDataStream::toMeasurementUnit($builder);
     }
+
     public static function toObservationDataType(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = static::toDataStream();
+            $builder = static::toThing();
         }
+        Thing::toDataStream($builder);
         return MultiDataStream::toObservationDataType($builder);
     }
+
     public static function toSensor(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = static::toDataStream();
+            $builder = static::toThing();
         }
+        Thing::toDataStream($builder);
         return MultiDataStream::toSensor($builder);
     }
+
     public static function toObservedProperty(?Builder $builder): Builder
     {
         if ($builder == null) {
-            $builder = static::toDataStream();
+            $builder = static::toThing();
         }
-        MultiDataStream::toObservedProperty($builder);
-        return $builder;
+        Thing::toDataStream($builder);
+        return MultiDataStream::toObservedProperty($builder);
     }
     public static function joinTo(string $pathVariableItem, Builder $builder = null): Builder
     {
@@ -99,6 +122,19 @@ class Thing extends BaseEntity
             case ObservedProperty::PATH_VARIABLE_NAME:
                 $builder = static::toObservedProperty($builder);
                 break;
+            case Thing::PATH_VARIABLE_NAME:
+                $builder = static::toThing($builder);
+                break;
+                //Tasking 
+            case TaskingCapabilities::PATH_VARIABLE_NAME:
+                $builder = static::toTaskingCap($builder);
+                break;
+            case Task::PATH_VARIABLE_NAME:
+                $builder = static::toTask($builder);
+                break;
+            case Actuator::PATH_VARIABLE_NAME:
+                $builder = static::toActuator($builder);
+                break;
         }
         return $builder;
     }
@@ -106,7 +142,20 @@ class Thing extends BaseEntity
     /**
      * @throws Exception
      */
-    static function toThing(Builder $builder = null): Builder
+
+    static function toActuator(Builder $builder = null): Builder
+    {
+        throw new \Exception("cannot navigate " . static::PATH_VARIABLE_NAME . " to Actuator");
+    }
+    static function toTask(Builder $builder = null): Builder
+    {
+        throw new \Exception("cannot navigate " . static::PATH_VARIABLE_NAME . " to Task");
+    }
+    static function toTaskingCap(Builder $builder = null): Builder
+    {
+        throw new \Exception("cannot navigate " . static::PATH_VARIABLE_NAME . " to TaskingCapability");
+    }
+    static function toLocation(Builder $builder = null): Builder
     {
         throw new Exception("cannot navigate " . static::PATH_VARIABLE_NAME . " to itself");
     }

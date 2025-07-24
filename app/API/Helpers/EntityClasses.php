@@ -13,6 +13,7 @@ use App\API\EntityGetter\ObservationType;
 use App\API\EntityGetter\ObservedProperty;
 use App\API\EntityGetter\Sensor;
 use App\API\EntityGetter\Thing;
+use App\API\EntityGetter\Location;
 use App\API\EntityGetter\TaskingCapabilities;
 use App\API\EntityGetter\Task;
 use App\API\EntityGetter\Actuator;
@@ -35,6 +36,7 @@ class EntityClasses
         ObservedProperty::class,
         Sensor::class,
         Thing::class,
+        Location::class,
         TaskingCapabilities::class,
         Task::class,
         Actuator::class

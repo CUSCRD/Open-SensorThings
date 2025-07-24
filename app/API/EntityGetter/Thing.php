@@ -45,31 +45,34 @@ class Thing extends BaseEntity
     static function toActuator(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = self::selfBuilder();
+            // $builder = self::selfBuilder(); v2.0
+            $builder = static::toTaskingCap();
         }
-        static::joinTable(
-            $builder,
-            static::JOIN_NAME,
-            TaskingCapabilities::TABLE_NAME,
-            TaskingCapabilities::JOIN_NAME,
-            'id',
-            'thing_Id'
-        );
+        // static::joinTable(
+        //     $builder,
+        //     static::JOIN_NAME,
+        //     TaskingCapabilities::TABLE_NAME,
+        //     TaskingCapabilities::JOIN_NAME,
+        //     'id',
+        //     'thing_Id'
+        // ); v2.0
         return TaskingCapabilities::toActuator($builder);
     }
+
     static function toTask(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = self::selfBuilder();
+            // $builder = self::selfBuilder();
+            $builder = static::toTaskingCap();
         }
-        static::joinTable(
-            $builder,
-            static::JOIN_NAME,
-            TaskingCapabilities::TABLE_NAME,
-            TaskingCapabilities::JOIN_NAME,
-            'id',
-            'thing_Id'
-        );
+        // static::joinTable(
+        //     $builder,
+        //     static::JOIN_NAME,
+        //     TaskingCapabilities::TABLE_NAME,
+        //     TaskingCapabilities::JOIN_NAME,
+        //     'id',
+        //     'thing_Id'
+        // ); v2.0
         return TaskingCapabilities::toTask($builder);
     }
 
@@ -134,18 +137,25 @@ class Thing extends BaseEntity
         MultiDataStream::toObservedProperty($builder);
         return $builder;
     }
+
+    public static function toLocation(Builder $builder = null): Builder
+    {
+        if ($builder == null) {
+            $builder = self::selfBuilder();
+        }
+        return static::joinTable(
+            $builder,
+            static::JOIN_NAME,
+            Location::TABLE_NAME,
+            Location::JOIN_NAME,
+            'id_location',
+            'id'
+        );
+    }
+
     public static function joinTo(string $pathVariableItem, Builder $builder = null): Builder
     {
         switch ($pathVariableItem) {
-            case TaskingCapabilities::PATH_VARIABLE_NAME:
-                $builder = static::toTaskingCap($builder);
-                break;
-            case Task::PATH_VARIABLE_NAME:
-                $builder = static::toTask($builder);
-                break;
-            case Actuator::PATH_VARIABLE_NAME:
-                $builder = static::toActuator($builder);
-                break;
             case MultiDataStream::PATH_VARIABLE_NAME:
                 $builder = static::toDataStream($builder);
                 break;
@@ -163,6 +173,19 @@ class Thing extends BaseEntity
                 break;
             case ObservedProperty::PATH_VARIABLE_NAME:
                 $builder = static::toObservedProperty($builder);
+                break;
+            case Location::PATH_VARIABLE_NAME:
+                $builder = static::toLocation($builder);
+                break;
+                //Tasking 
+            case TaskingCapabilities::PATH_VARIABLE_NAME:
+                $builder = static::toTaskingCap($builder);
+                break;
+            case Task::PATH_VARIABLE_NAME:
+                $builder = static::toTask($builder);
+                break;
+            case Actuator::PATH_VARIABLE_NAME:
+                $builder = static::toActuator($builder);
                 break;
         }
         return $builder;

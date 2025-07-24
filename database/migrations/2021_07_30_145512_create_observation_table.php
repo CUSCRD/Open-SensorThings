@@ -20,7 +20,7 @@ class CreateObservationTable extends Migration
             $table->id('id');
             $table->unsignedBigInteger('dataStreamId')->nullable(false);
             //JSON
-            $table->string('result');
+            $table->longText('result');
             $table->dateTime('resultTime')->nullable(true)->default(null);
             //The time period during which the result may be used.
             $table->dateTime('validTime')->nullable(true);

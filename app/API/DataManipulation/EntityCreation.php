@@ -237,7 +237,7 @@ class EntityCreation
     {
         $name = $request['name'] ?? null;
         $description = $request['description'] ?? null;
-        $properties =  $request['properties'] == null ? null : json_encode($request['properties']);
+        $properties =  isset($request['properties']) ? ($request['properties'] == null ? null : json_encode($request['properties'])) : null;
         $avt_image = $request['avt_image'] ?? null;
         $id_user = $request['id_user'] ?? null;
         $id_location = $request['id_location'] ?? null;
@@ -445,6 +445,12 @@ class EntityCreation
             // 'multiObservationDataType' => $request['multiObservationDataType'] ?? null
         ];
         $id = EntityInsertion::insertDataStream($inputs, $this->header);
+        EntityInsertion::insertObservation([
+            'dataStreamId' => $id,
+            'result' => [
+                0
+            ]
+        ]);
         return $id;
     }
 

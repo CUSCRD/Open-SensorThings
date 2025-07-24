@@ -153,7 +153,7 @@ class APIController extends Controller
         }
 
         $user = DB::table(TablesName::Users)
-            ->where('remember_token', $request->token)
+            ->where('remember_token', $request->header('token'))
             ->get()
             ->firstOrFail();
 

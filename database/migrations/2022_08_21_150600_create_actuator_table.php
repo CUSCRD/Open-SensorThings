@@ -19,10 +19,10 @@ class CreateActuatorTable extends Migration
             $table->id();
             $table->string('name')->nullable(false);
             $table->string('description');
-            $table->unsignedBigInteger('endcodingType');
+            $table->unsignedBigInteger('encodingType');
             $table->timestamps();
 
-            $table->foreign('endcodingType')
+            $table->foreign('encodingType')
                 ->references('id')
                 ->on(TablesName::ENCODING_TYPE)
                 ->cascadeOnUpdate()
@@ -39,6 +39,19 @@ class CreateActuatorTable extends Migration
             ->insert([
                 'name' => 'LED',
                 'description' => 'Linkit Smart 7688 Duo Board that has an LED which can be tasked as on/off.',
+                'encodingType' => 1
+            ]);
+        DB::table(TablesName::ACTUATOR)
+            ->insert([
+                'name' => 'BUMP',
+                'description' => 'Turn on or turn off a water BUMP, Which is installed on a tree.',
+                'encodingType' => 1
+            ]);
+        DB::table(TablesName::ACTUATOR)
+            ->insert([
+                'id'=>7,
+                'name' => 'Valve',
+                'description' => 'Turn on or turn off a water value, Which is installed on a tree',
                 'encodingType' => 1
             ]);
     }

@@ -18,7 +18,7 @@ class TaskingCapabilities extends BaseEntity
         self::JOIN_NAME . '.name',
         self::JOIN_NAME . '.description',
         self::JOIN_NAME . '.taskingParameters',
-        self::JOIN_NAME . '.isAuto',
+        // self::JOIN_NAME . '.isAuto', v2.0
         // 'actuator1.value as actuator_id'
     ];
     public const PROPERTIES = [
@@ -26,15 +26,26 @@ class TaskingCapabilities extends BaseEntity
         'name',
         'description',
         'taskingParameters',
-        'isAuto',
+        // 'isAuto', v2.0
     ];
-    public const PATH_VARIABLE_NAME = 'taskingcapability';
+    // public const PATH_VARIABLE_NAME = 'taskingcapability'; v2.0
+    public const PATH_VARIABLE_NAME = 'taskingcapabilities';
+
     public static function toActuator(Builder $builder = null): Builder
     {
         if ($builder == null) {
-            $builder = parent::selfBuilder();
+            // $builder = parent::selfBuilder(); v2.0
+            $builder = static::selfBuilder();
         }
-        return static::joinTable(
+        // return static::joinTable(
+        //     $builder,
+        //     static::JOIN_NAME,
+        //     TablesName::ACTUATOR,
+        //     Actuator::JOIN_NAME,
+        //     'actuator_id',
+        //     'id'
+        // ); v2.0
+        $builder = static::joinTable(
             $builder,
             static::JOIN_NAME,
             TablesName::ACTUATOR,
@@ -42,6 +53,7 @@ class TaskingCapabilities extends BaseEntity
             'actuator_id',
             'id'
         );
+        return Actuator::selfRef($builder);
     }
 
     static function toThing(Builder $builder = null): Builder
@@ -74,17 +86,12 @@ class TaskingCapabilities extends BaseEntity
             'id'
         );
     }
+
     public static function joinTo(string $pathVariableItem, Builder $builder = null): Builder
     {
         switch ($pathVariableItem) {
             case Thing::PATH_VARIABLE_NAME:
                 $builder = static::toThing($builder);
-                break;
-            case Actuator::PATH_VARIABLE_NAME:
-                $builder = static::toActuator($builder);
-                break;
-            case Task::PATH_VARIABLE_NAME:
-                $builder = static::toTask($builder);
                 break;
             case MultiDataStream::PATH_VARIABLE_NAME:
                 $builder = static::toDataStream($builder);
@@ -103,6 +110,13 @@ class TaskingCapabilities extends BaseEntity
                 break;
             case ObservedProperty::PATH_VARIABLE_NAME:
                 $builder = static::toObservedProperty($builder);
+                break;
+                // Tasking
+            case Actuator::PATH_VARIABLE_NAME:
+                $builder = static::toActuator($builder);
+                break;
+            case Task::PATH_VARIABLE_NAME:
+                $builder = static::toTask($builder);
                 break;
         }
         return $builder;
@@ -134,6 +148,10 @@ class TaskingCapabilities extends BaseEntity
     public static function toObservedProperty(?Builder $builder): Builder
     {
         throw new Exception("cannot navigate " . static::PATH_VARIABLE_NAME . " to ObservedProperty");
+    }
+    public static function toLocation(Builder $builder = null): Builder
+    {
+        throw new Exception("cannot navigate " . static::PATH_VARIABLE_NAME . " to Location");
     }
     public static function toTaskingCap(?Builder $builder = null): Builder
     {

@@ -21,27 +21,33 @@ class EntitySelecting
      */
     public static function handleSelectQuery(BaseEntity $controller, Builder $builder, Builder $cloneBuilder, string $closestCollectionName, array $requestParameter = null, string $resultFormat = null): array
     {
-        $joinName = EntityPropertyGetter::getJoinName($closestCollectionName);
-        $ids = ((clone $builder))->distinct()->get($joinName . '.' . 'id');
-        $idRebuild = [];
-        foreach ($ids as $itemIds) {
-            array_push($idRebuild, $itemIds->id);
-        }
-        if (isset($requestParameter['select'])) {
-            $select = $requestParameter['select'];
-        } else {
-            $select = implode(',', EntityPropertyGetter::getProperties($closestCollectionName));
-        }
-        $result = static::select($controller, $cloneBuilder, $select, $closestCollectionName, $resultFormat, $idRebuild, $closestCollectionName, $requestParameter);
-        if (isset($result['components']) && $result['components'] != null) {
-            $components = $result['components'];
-        } else {
-            $components = null;
-        }
-        $count = $result['count'] ?? null;
+        try {
+            $joinName = EntityPropertyGetter::getJoinName($closestCollectionName);
+            $ids = (clone $builder)->distinct()->get($joinName . '.' . 'id');
+            $idRebuild = [];
+            foreach ($ids as $itemIds) {
+                array_push($idRebuild, $itemIds->id);
+            }
 
-        $result = $result['data'];
-        return ['components' => $components, 'count' => $count, 'result' => $result, 'idRebuild' => $idRebuild];
+            if (isset($requestParameter['select'])) {
+                $select = $requestParameter['select'];
+            } else {
+                $select = implode(',', EntityPropertyGetter::getProperties($closestCollectionName));
+            }
+            $result = static::select($controller, $cloneBuilder, $select, $closestCollectionName, $resultFormat, $idRebuild, $closestCollectionName, $requestParameter);
+            if (isset($result['components']) && $result['components'] != null) {
+                $components = $result['components'];
+            } else {
+                $components = null;
+            }
+            $count = $result['count'] ?? null;
+
+            $result = $result['data'];
+            return ['components' => $components, 'count' => $count, 'result' => $result, 'idRebuild' => $idRebuild];
+        } catch (Exception $e) {
+            // throw new Exception("property in \$order clause must be in \$select clause", 400);
+            throw new Exception($e->getMessage());
+        }
     }
     /**
      * lấy toàn bộ thuộc tính của một collection
@@ -185,14 +191,11 @@ class EntitySelecting
             }
         }
 
-
         if ($resultFormat == null) {
-
             $arrayQuery = static::selectResultWithoutFormat($builder, $newSelected, $parentId, $parentName);
             $components = null;
             $count = null;
         } else {
-
             $components = static::getComponent($newSelected);
             $arrayQuery = static::selectResultWithFormat($builder, $newSelected, $resultFormat, $parentId, $parentName, $requestParameter);
             if (isset($arrayQuery['count'])) {
@@ -231,7 +234,6 @@ class EntitySelecting
     protected static function selectResultWithoutFormat(Builder $builder, array $selectionArray, array $parentId = null, string $parentCollectionName = null): array
     {
         $arrayQuery = [];
-
         if ($parentId != null) {
             $parentJoinName = EntityPropertyGetter::getJoinName($parentCollectionName);
             foreach ($parentId as $itemId) {
