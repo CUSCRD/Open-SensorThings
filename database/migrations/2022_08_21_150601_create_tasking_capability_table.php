@@ -39,7 +39,7 @@ class CreateTaskingCapabilityTable extends Migration
 
         DB::table(TablesName::TASKINGCAPABILITY)
             ->insert([
-                'id' => 11,
+                'id' => 1,
                 'actuator_id' => 2,
                 'name' => 'Control Light',
                 'description' => 'Turn the light on and off, as well as specifying light color.',
@@ -74,9 +74,9 @@ class CreateTaskingCapabilityTable extends Migration
                                         }'
             ]);
 
-            DB::table(TablesName::TASKINGCAPABILITY)
+        DB::table(TablesName::TASKINGCAPABILITY)
             ->insert([
-                'id' => 19,
+                'id' => 2,
                 'actuator_id' => 7,
                 'name' => 'Control Valve',
                 'description' => 'Turn the Valve on and off',

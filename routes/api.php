@@ -64,7 +64,8 @@ Route::group(['middleware' => ['api']], function () {
             ->where('params', '^(?!.*' . Observation::PATH_VARIABLE_NAME . '(\(\d+\)(\/)?)?$).*$');
 
         Route::delete(PathName::DELETE . '/{params?}', [DeleteController::class, 'action'])
-            ->where('params', '^(?!.*' . Observation::PATH_VARIABLE_NAME . '(\(\d+\)(\/)?)?$).*$')->middleware('auth.rest:' . UserRolesFixedData::REST_DELETE['id']);
+            ->where('params', '^(?!.*' . Observation::PATH_VARIABLE_NAME . '(\(\d+\)(\/)?)?$).*$');
+        // ->middleware('auth.rest:' . UserRolesFixedData::REST_DELETE['id']);
 
         Route::get(PathName::GET . '/{params?}', [GetController::class, 'action'])
             ->where('params', '(.*)');

@@ -8,12 +8,16 @@ use App\Constant\BaseFixedData;
 
 class SensorEncodingType extends BaseFixedData
 {
-    const PDF=array(
-        'encodingType'=>'PDF',
-        'value'=>'application/pdf'
+    const PDF = array(
+        'encodingType' => 'PDF',
+        'value' => 'application/pdf'
     );
-    const SENSOR_ML=array(
-        'encodingType'=>'SensorML',
-        'value'=>'http://www.opengis.net/doc/IS/SensorML/2.0'
+    const SENSOR_ML = array(
+        'encodingType' => 'SensorML',
+        'value' => 'http://www.opengis.net/doc/IS/SensorML/2.0'
+    );
+    const HTML = array(
+        'encodingType' => 'HTML',
+        'value' => 'text/html'
     );
 }

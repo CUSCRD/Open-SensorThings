@@ -111,6 +111,16 @@ class CreateUsersTable extends Migration
         ]);
         $user->save();
 
+        $user = new User();
+        $user->fill([
+            'username' => 'thanhtuong',
+            'password' => Hash::make("thanhtuong"),
+            'displayname' => 'Thanh Tường',
+            'phone' => '0829478570',
+            'avatar' => 'https://avatars.githubusercontent.com/u/161623192?v=4',
+        ]);
+        $user->save();
+
         // $user = new User();
         // $user->fill(['username' => 'patch', 'password' => Hash::make("patch")]);
         // $user->save();

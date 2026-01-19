@@ -23,9 +23,9 @@ class CreateLocationsTable extends Migration
         });
         DB::table('locations')
             ->insert([
-                'name' => 'test',
-                'description' => 'This is test location',
-                'coordinates' => '00'
+                'name' => 'Vị trí trường Đại học Cần Thơ',
+                'description' => 'Khu II, Đ. 3 Tháng 2, Xuân Khánh, Ninh Kiều, Cần Thơ, Việt Nam',
+                'coordinates' => '[10.03133564716779, 105.77088992116212]'
             ]);
     }
 

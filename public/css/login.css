@@ -1,211 +1,141 @@
-html {
-    height: 100%;
-    /* max-height: 600px; */
-    width: 0px;
-    background-color: hsla(200, 40%, 30%, .4);
-    background-image:
-        url('https://78.media.tumblr.com/cae86e76225a25b17332dfc9cf8b1121/tumblr_p7n8kqHMuD1uy4lhuo1_540.png'),
-        url('https://78.media.tumblr.com/66445d34fe560351d474af69ef3f2fb0/tumblr_p7n908E1Jb1uy4lhuo1_1280.png'),
-        url('https://78.media.tumblr.com/8cd0a12b7d9d5ba2c7d26f42c25de99f/tumblr_p7n8kqHMuD1uy4lhuo2_1280.png'),
-        url('https://78.media.tumblr.com/5ecb41b654f4e8878f59445b948ede50/tumblr_p7n8on19cV1uy4lhuo1_1280.png'),
-        url('https://78.media.tumblr.com/28bd9a2522fbf8981d680317ccbf4282/tumblr_p7n8kqHMuD1uy4lhuo3_1280.png');
-    background-repeat: repeat-x;
-    background-position:
-        0 20%,
-        0 100%,
-        0 50%,
-        0 100%,
-        0 0;
-    background-size:
-        2500px,
-        800px,
-        500px 200px,
-        1000px,
-        400px 260px;
-    animation: 50s para infinite linear;
+:root {
+    --primary: #2563eb;
+    --secondary: #0ea5e9;
+    --bg: #f8fafc;
+    --text: #1f2937;
+    --card: #ffffff;
+    --muted: #6b7280;
 }
 
-@keyframes para {
-    100% {
-        background-position:
-            -5000px 20%,
-            -800px 95%,
-            500px 50%,
-            1000px 100%,
-            400px 0;
-    }
+* {
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
 }
 
 body {
     margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    background: linear-gradient(#141e30, #243b55);
+    background: linear-gradient(135deg, var(--bg), #e0f2fe);
+    color: var(--text);
+    min-height: 100vh;
 }
 
-.login-box {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 400px;
-    padding: 40px;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, .5);
-    box-sizing: border-box;
-    box-shadow: 0 15px 25px rgba(0, 0, 0, .6);
-    border-radius: 10px;
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 60px 24px;
 }
 
-.login-box h2 {
-    margin: 0 0 30px;
-    padding: 0;
-    color: #fff;
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 56px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.header {
     text-align: center;
+    margin-bottom: 48px;
 }
 
-.login-box .user-box {
-    position: relative;
+.logo {
+    font-size: 56px;
+    color: var(--primary);
+    margin-bottom: 16px;
 }
 
-.login-box .user-box input {
-    width: 100%;
-    padding: 10px 0;
-    font-size: 16px;
-    color: #fff;
-    margin-bottom: 30px;
-    border: none;
-    border-bottom: 1px solid #fff;
-    outline: none;
-    background: transparent;
+h1 {
+    font-size: 38px;
+    margin-bottom: 8px;
 }
 
-.login-box .user-box label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 10px 0;
-    font-size: 16px;
-    color: #fff;
-    pointer-events: none;
-    transition: .5s;
-}
-
-.login-box .user-box input:focus~label,
-.login-box .user-box input:valid~label {
-    top: -20px;
-    left: 0;
-    color: #03e9f4;
-    font-size: 12px;
-}
-
-.login-box form a {
-    position: relative;
+.version {
     display: inline-block;
-    padding: 10px 20px;
-    color: #03e9f4;
-    font-size: 16px;
-    text-decoration: none;
-    text-transform: uppercase;
-    overflow: hidden;
-    transition: .5s;
-    margin-top: 40px;
-    letter-spacing: 4px
+    margin-top: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 14px;
 }
 
-.login-box a:hover {
-    background: #03e9f4;
-    color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 0 5px #03e9f4,
-        0 0 25px #03e9f4,
-        0 0 50px #03e9f4,
-        0 0 100px #03e9f4;
+.subtitle {
+    margin-top: 20px;
+    font-size: 18px;
+    color: var(--muted);
+    line-height: 1.6;
 }
 
-.login-box a span {
-    position: absolute;
-    display: block;
+.section {
+    margin-top: 48px;
 }
 
-.login-box a span:nth-child(1) {
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #03e9f4);
-    animation: btn-anim1 1s linear infinite;
+.section h2 {
+    font-size: 26px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-@keyframes btn-anim1 {
-    0% {
-        left: -100%;
-    }
-
-    50%,
-    100% {
-        left: 100%;
-    }
+.section h2 i {
+    color: var(--secondary);
 }
 
-.login-box a span:nth-child(2) {
-    top: -100%;
-    right: 0;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(180deg, transparent, #03e9f4);
-    animation: btn-anim2 1s linear infinite;
-    animation-delay: .25s
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
 }
 
-@keyframes btn-anim2 {
-    0% {
-        top: -100%;
-    }
-
-    50%,
-    100% {
-        top: 100%;
-    }
+.box {
+    background: #f1f5f9;
+    border-radius: 14px;
+    padding: 28px;
+    transition: all 0.3s ease;
 }
 
-.login-box a span:nth-child(3) {
-    bottom: 0;
-    right: -100%;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(270deg, transparent, #03e9f4);
-    animation: btn-anim3 1s linear infinite;
-    animation-delay: .5s
+.box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
-@keyframes btn-anim3 {
-    0% {
-        right: -100%;
-    }
-
-    50%,
-    100% {
-        right: 100%;
-    }
+.box h3 {
+    margin-top: 0;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
-.login-box a span:nth-child(4) {
-    bottom: -100%;
-    left: 0;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(360deg, transparent, #03e9f4);
-    animation: btn-anim4 1s linear infinite;
-    animation-delay: .75s
+.box p,
+.box ul {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
 }
 
-@keyframes btn-anim4 {
-    0% {
-        bottom: -100%;
-    }
+.box ul {
+    padding-left: 18px;
+}
 
-    50%,
-    100% {
-        bottom: 100%;
-    }
+.tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(14, 165, 233, 0.15);
+    color: var(--secondary);
+}
+
+.footer {
+    text-align: center;
+    margin-top: 56px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.footer span {
+    font-weight: 600;
+    color: var(--primary);
 }

@@ -28,6 +28,14 @@ class EntityInsertion
             throw new Exception('Error while inserting Thing Entity', 400);
         }
     }
+    public static function insertLocation(array $data): int
+    {
+        try {
+            return DB::table(TablesName::LOCATION)->insertGetId($data);
+        } catch (Exception $exception) {
+            throw new Exception('Error while inserting Location Entity', 400);
+        }
+    }
     public static function insertTaskingCapabilities(array $data): int
     {
         try {
@@ -39,6 +47,18 @@ class EntityInsertion
     public static function insertActuator(array $data): int
     {
         try {
+            $encodingTypeValue = $data['encodingType'];
+            $resultType = DB::table(TablesName::ENCODING_TYPE)
+                ->where('value', '=', $encodingTypeValue)
+                ->get(['id']);
+            if (count($resultType) > 0) {
+                $typeId = $resultType[0]->id;
+            } else {
+                throw new Exception('encoding type is not exist', 400);
+            }
+
+            $data['encodingType'] = $typeId;
+
             return DB::table(TablesName::ACTUATOR)->insertGetId($data);
         } catch (Exception $exception) {
             throw new Exception('Error while inserting Actuator Entity', 400);
@@ -47,18 +67,9 @@ class EntityInsertion
     public static function insertTask(array $data): int
     {
         try {
-            $id = DB::table(TablesName::TASK)
-                ->where('id', '=', $data['id'])
-                ->exists();
-            if ($id) {
-                DB::table(TablesName::TASK)
-                    ->where('id', $data['id'])
-                    ->update(['taskingParameters' => $data['taskingParameters']]);
-                return $data['id'];
-            }
             return DB::table(TablesName::TASK)->insertGetId($data);
         } catch (Exception $exception) {
-            throw new Exception('Error while inserting Task Entity', 400);
+            throw new Exception('Error while inserting Task Entity | ' . $exception->getMessage(), 400);
         }
     }
     public static function insertObservedProperty(array $data): int
@@ -280,7 +291,7 @@ class EntityInsertion
         $name = $inputs['name'];
         $description = $inputs['description'];
         $observationType = $inputs['observationType'];
-        // $unitOfMeasurement = $inputs['unitOfMeasurement'];
+        $unitOfMeasurement = $inputs['unitOfMeasurement'];
         // $observations = $inputs['observations'];
         // $observedProperties = $inputs['observedProperty'];
         // $multiObservationDataType = $inputs['multiObservationDataType'];
@@ -331,9 +342,7 @@ class EntityInsertion
             throw new Exception('error while inserting Data Stream', 400);
         }
 
-        //đã có data stream
-        //sử dụng id của nó:
-        return $idDataStream;
+
         //xử lý đơn vị
         $idArrayUnits = []; //mảng chứa id các đơn vị mà datastream này đo đạc
         //đối chiếu và thêm mới
@@ -383,102 +392,103 @@ class EntityInsertion
         //xử lý observation nếu có kèm theo
         //observation này không cần mang theo id của datastream
         //nếu nó mang theo id, id của nó sẽ bị bỏ qua
-        if ($observations != null) {
-            if (count($observations) > 0) {
-                foreach ($observations as $observation) {
-                    if (isset($observation['result']) && $observation['result'] != null) {
-                        $dataObservation = [
-                            'dataStreamId' => $idDataStream,
-                            'result' => $observation['result'],
-                            'resultTime' => $observation['resultTime'] ?? null,
-                            'validTime' => $observation['validTime'] ?? null
-                        ];
-                        static::insertObservation($dataObservation);
-                    } else {
-                        throw new Exception('result attribute not found in observation object', 400);
-                    }
-                }
-            }
-        }
+        // if ($observations != null) {
+        //     if (count($observations) > 0) {
+        //         foreach ($observations as $observation) {
+        //             if (isset($observation['result']) && $observation['result'] != null) {
+        //                 $dataObservation = [
+        //                     'dataStreamId' => $idDataStream,
+        //                     'result' => $observation['result'],
+        //                     'resultTime' => $observation['resultTime'] ?? null,
+        //                     'validTime' => $observation['validTime'] ?? null
+        //                 ];
+        //                 static::insertObservation($dataObservation);
+        //             } else {
+        //                 throw new Exception('result attribute not found in observation object', 400);
+        //             }
+        //         }
+        //     }
+        // }
 
         //xử lý thuộc tính đo lường. nếu thuộc tính rỗng hoặc null là một dạng lỗi, nhưng tạm thời chấp nhận xử lý
-        if ($observedProperties != null) {
-            if (count($observedProperties) > 0) {
-                $idOPArray = [];
-                foreach ($observedProperties as $observedProperty) {
-                    if (isset($observedProperty['id'])) {
-                        array_push($idOPArray, $observedProperty['id']);
-                    } else if (isset($observedProperty['name'])) {
-                        //kiểm tra tồn tại
-                        //trong tài liệu OGC có ví dụ liên kết với một ObservedProperty entity có sẵn,
-                        //nhưng lại là json định nghĩa nó, việc này sẽ gây lãng phí bới vì thực tế chỉ cần tên hoặc id là được
+        // if ($observedProperties != null) {
+        //     if (count($observedProperties) > 0) {
+        //         $idOPArray = [];
+        //         foreach ($observedProperties as $observedProperty) {
+        //             if (isset($observedProperty['id'])) {
+        //                 array_push($idOPArray, $observedProperty['id']);
+        //             } else if (isset($observedProperty['name'])) {
+        //                 //kiểm tra tồn tại
+        //                 //trong tài liệu OGC có ví dụ liên kết với một ObservedProperty entity có sẵn,
+        //                 //nhưng lại là json định nghĩa nó, việc này sẽ gây lãng phí bới vì thực tế chỉ cần tên hoặc id là được
 
-                        $resultIDOP = DB::table(TablesName::OBSERVED_PROPERTY)->where('name', '=', $observedProperty['name'])->get('id');
-                        if (count($resultIDOP) > 0) {
-                            array_push($idOPArray, $resultIDOP[0]->id);
-                        } else {
-                            //thêm mới
-                            if (isset($observedProperty['definition'])) {
-                                if (isset($observedProperty['description'])) {
-                                    $idOP = static::insertObservedProperty($observedProperty);
-                                    array_push($idOPArray, $idOP);
-                                } else {
-                                    throw new Exception('invalid observed property object: description attribute not found', 400);
-                                }
-                            } else {
-                                throw new Exception('invalid observed property object: definition attribute not found', 400);
-                            }
-                        }
-                    } else {
-                        throw new Exception('invalid observed property object: name attribute not found', 400);
-                    }
-                }
-                $idOPArray = array_unique($idOPArray);
-                //insert observed properties for datastream
-                foreach ($idOPArray as $idOpItem) {
-                    try {
-                        DB::table(TablesName::DATA_STREAM_OBSERVED_PROPERTY)->insert([
-                            'dataStreamId' => $idDataStream,
-                            'observedPropertyId' => $idOpItem
-                        ]);
-                    } catch (Exception $exception) {
-                        throw new Exception('error while linking Data Stream and Observed Property', 400);
-                    }
-                }
-            }
-        }
+        //                 $resultIDOP = DB::table(TablesName::OBSERVED_PROPERTY)->where('name', '=', $observedProperty['name'])->get('id');
+        //                 if (count($resultIDOP) > 0) {
+        //                     array_push($idOPArray, $resultIDOP[0]->id);
+        //                 } else {
+        //                     //thêm mới
+        //                     if (isset($observedProperty['definition'])) {
+        //                         if (isset($observedProperty['description'])) {
+        //                             $idOP = static::insertObservedProperty($observedProperty);
+        //                             array_push($idOPArray, $idOP);
+        //                         } else {
+        //                             throw new Exception('invalid observed property object: description attribute not found', 400);
+        //                         }
+        //                     } else {
+        //                         throw new Exception('invalid observed property object: definition attribute not found', 400);
+        //                     }
+        //                 }
+        //             } else {
+        //                 throw new Exception('invalid observed property object: name attribute not found', 400);
+        //             }
+        //         }
+        //         $idOPArray = array_unique($idOPArray);
+        //         //insert observed properties for datastream
+        //         foreach ($idOPArray as $idOpItem) {
+        //             try {
+        //                 DB::table(TablesName::DATA_STREAM_OBSERVED_PROPERTY)->insert([
+        //                     'dataStreamId' => $idDataStream,
+        //                     'observedPropertyId' => $idOpItem
+        //                 ]);
+        //             } catch (Exception $exception) {
+        //                 throw new Exception('error while linking Data Stream and Observed Property', 400);
+        //             }
+        //         }
+        //     }
+        // }
 
         //multi observation data type
         //thuộc tính này phải có, giả định như nó có thể lỗi
-        if ($multiObservationDataType != null) {
-            if (count($multiObservationDataType) > 0) {
-                foreach ($multiObservationDataType as $itemODT) {
-                    if (isset($itemODT['value'])) {
-                        $modtCheck = DB::table(TablesName::OBSERVATION_TYPE)->where('value', '=', $itemODT['value'])->get(['id']);
-                        if (count($modtCheck) > 0) {
-                            $observationTypeId = $modtCheck[0]->id;
-                        } else {
-                            $inputOT = [
-                                'code' => 'No_Code',
-                                'value' => $itemODT,
-                                'result' => 'unknown'
-                            ];
-                            $observationTypeId = static::insertObservationType($inputOT);
-                        }
-                        try {
-                            DB::table(TablesName::DATA_STREAM_MULTI_OBSERVATION_TYPE)->insert([
-                                'dataStreamId' => $idDataStream,
-                                'observedType' => $observationTypeId
-                            ]);
-                        } catch (Exception $exception) {
-                            throw new Exception('error while linking Observed Type and Data Stream', 400);
-                        }
-                    } else {
-                        throw new Exception('$multiObservationDataType: property "value" is required', 400);
-                    }
-                }
-            }
-        }
+        // if ($multiObservationDataType != null) {
+        //     if (count($multiObservationDataType) > 0) {
+        //         foreach ($multiObservationDataType as $itemODT) {
+        //             if (isset($itemODT['value'])) {
+        //                 $modtCheck = DB::table(TablesName::OBSERVATION_TYPE)->where('value', '=', $itemODT['value'])->get(['id']);
+        //                 if (count($modtCheck) > 0) {
+        //                     $observationTypeId = $modtCheck[0]->id;
+        //                 } else {
+        //                     $inputOT = [
+        //                         'code' => 'No_Code',
+        //                         'value' => $itemODT,
+        //                         'result' => 'unknown'
+        //                     ];
+        //                     $observationTypeId = static::insertObservationType($inputOT);
+        //                 }
+        //                 try {
+        //                     DB::table(TablesName::DATA_STREAM_MULTI_OBSERVATION_TYPE)->insert([
+        //                         'dataStreamId' => $idDataStream,
+        //                         'observedType' => $observationTypeId
+        //                     ]);
+        //                 } catch (Exception $exception) {
+        //                     throw new Exception('error while linking Observed Type and Data Stream', 400);
+        //                 }
+        //             } else {
+        //                 throw new Exception('$multiObservationDataType: property "value" is required', 400);
+        //             }
+        //         }
+        //     }
+        // }
+
         return $idDataStream;
     }
 

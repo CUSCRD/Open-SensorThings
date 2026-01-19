@@ -110,6 +110,7 @@ class IoTController
         $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . '/' . PathName::GET . '/' . $path;
         $analyzeRequestParam = EntityPathRequest::analyzeRequestParam($arrayRequest);
         switch ($pathVariable['first']) {
+
             case Task::PATH_VARIABLE_NAME:
                 $valueResult = "taskingParameters";
                 $keyResult = 'status';
@@ -125,7 +126,8 @@ class IoTController
             $ketQua = EntityQuery::getQueryRequestResult($controller, $builder, $pathVariable['last'], $url, $analyzeRequestParam);
             // if ($pathVariable['first'] == 'actuator' && isset($analyzeRequestParam['isAuto']))
             //     return response()->json($ketQua[0]->isAuto);
-            return response()->json([$keyResult => (int)$ketQua[0]->$valueResult, 'code' => 200]);
+            // return response()->json([$keyResult => (int)$ketQua[0]->$valueResult, 'code' => 200]);
+            return response()->json([$keyResult => (int)$ketQua["value"][0]->$valueResult, 'code' => 200]);
         } catch (Exception $exception) {
             $code = $exception->getCode();
             if (is_numeric($code) && $code >= 100 && $code < 600) {

@@ -14,9 +14,11 @@ use App\API\EntityGetter\Sensor;
 use App\API\EntityGetter\TaskingCapabilities;
 use App\API\EntityGetter\Task;
 use App\API\EntityGetter\Thing;
+use App\API\EntityGetter\Location;
 use App\API\Helpers\EntityPathRequest;
 use App\API\Helpers\ApiUtil;
 use App\Constant\TablesName;
+use App\Models\User\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -95,9 +97,9 @@ class EntityCreation
                 }
             } else {
                 switch ($targetEntity) {
-                        //encoding type không cần thay đổi nhiều
-                        //nếu muốn thay đổi thì thực hiện query lúc bảo trì project này
-                        //encoding type KHÔNG NÊN có trong danh sách thay đổi
+                    //encoding type không cần thay đổi nhiều
+                    //nếu muốn thay đổi thì thực hiện query lúc bảo trì project này
+                    //encoding type KHÔNG NÊN có trong danh sách thay đổi
                     case 'encodingtypes':
                         $id = $this->createEncodingType($request);
                         break;
@@ -131,13 +133,16 @@ class EntityCreation
                     case Task::PATH_VARIABLE_NAME:
                         $id = $this->createTask($request);
                         break;
+                    case Location::PATH_VARIABLE_NAME:
+                        $id = $this->createLocationEntity($request);
+                        break;
                     default:
                         throw new Exception('path param ' . $targetEntity . ' is not supported', 405);
                 }
 
                 //            $data=OgcUtil::getEntityById($targetEntity,$id);
                 $code = 201;
-                // $location = static::createLocation($targetEntity, $id);
+                $location = static::createLocation($targetEntity, $id);
                 $data = [
                     'message' => 'success',
                     // 'location' => $location
@@ -146,7 +151,7 @@ class EntityCreation
                 $result = [
                     'data' => $data,
                     'code' => $code,
-                    // 'Location' => $location
+                    'Location' => $location
                 ];
             }
             DB::commit();
@@ -210,7 +215,6 @@ class EntityCreation
         if ($name == null || $encodingType == null) {
             throw new Exception('invalid sensor property data: name or description or encoding type', 400);
         }
-
         //encoding type là value, không phải id
 
         $data = [
@@ -239,21 +243,48 @@ class EntityCreation
         $description = $request['description'] ?? null;
         $properties =  isset($request['properties']) ? ($request['properties'] == null ? null : json_encode($request['properties'])) : null;
         $avt_image = $request['avt_image'] ?? null;
-        $id_user = $request['id_user'] ?? null;
-        $id_location = $request['id_location'] ?? null;
+
+        $user = DB::table(TablesName::Users)
+            ->where('remember_token', $this->header->get('token'))
+            ->get(['id'])
+            ->first();
+        if ($user == null)
+            throw  new Exception('User is invalid', 400);
+        $id_user = $user->id;
+
+        $location = $request['Location'] ?? null;
+        if ($location == null)
+            throw new Exception('Location are required', 400);
+
+        $locationId = null;
+        if (isset($location['id'])) {
+            $locationId = $location['id'];
+            $isLocationExisting = DB::table(TablesName::LOCATION)
+                ->where('id', '=', $locationId)
+                ->exists();
+            if (!$isLocationExisting)
+                throw new Exception('Location is not found', 404);
+        } else {
+            $newLocationId = $this->createLocationEntity($location);
+            $locationId = $newLocationId;
+        }
+
         if ($name == null || $description == null) {
             throw new Exception('invalid Thing property data: both name and description are required', 400);
         }
+
         $data = [
             'name' => $name,
             'description' => $description,
             'properties' => $properties,
             'id_user' => $id_user,
-            'id_location' => $id_location,
+            'id_location' => $locationId,
         ];
+
         $id = EntityInsertion::insertThing($data);
         $data['id'] = $id;
         static::updateImage('avt_image', $avt_image, $id, 'Thing');
+
         if (isset($request['DataStreams']) && $request['DataStreams'] != null) {
             $dsRepresentation = $request['DataStreams'];
             //nó đang ở dạng mảng datastream
@@ -297,20 +328,49 @@ class EntityCreation
         $name = $request['name'] ?? null;
         $description = $request['description'] ?? null;
         $taskingParameters =  !isset($request['taskingParameters']) ? null : json_encode($request['taskingParameters']);
-        $actuator_id = $request['actuator_id'] ?? null;
-        $thing_id = $request['thing_id'] ?? null;
+        $actuator = $request['Actuator'] ?? null;
+        $thing = $request['Thing'] ?? null;
         if ($name == null || $description == null) {
             throw new Exception('invalid TaskingCapabilities property data: both name and description are required', 400);
         }
+
+        if ($actuator == null || $thing == null)
+            throw new Exception('Actuator and Thing are required', 400);
+
+        $actuatorId = null;
+        if (isset($actuator['id'])) {
+            $actuatorId = $actuator['id'];
+            $isActuatorExisting = DB::table(TablesName::ACTUATOR)
+                ->where('id', '=', $actuatorId)
+                ->exists();
+            if (!$isActuatorExisting)
+                throw new Exception('Actuator is not found', 404);
+        } else {
+            $newActuatorId = $this->createActuator($actuator);
+            $actuatorId = $newActuatorId;
+        }
+
+        $thingId = null;
+        if (isset($thing['id'])) {
+            $thingId = $thing['id'];
+            $isthingExisting = DB::table(TablesName::THING)
+                ->where('id', '=', $thingId)
+                ->exists();
+            if (!$isthingExisting)
+                throw new Exception('Thing is not found', 404);
+        } else {
+            throw new Exception('id of Thing is required', 400);
+        }
+
         $data = [
             'name' => $name,
             'description' => $description,
             'taskingParameters' => $taskingParameters,
-            'actuator_id' => $actuator_id,
-            'thing_id' => $thing_id
+            'actuator_id' => $actuatorId,
+            'thing_id' => $thingId
         ];
         $id = EntityInsertion::insertTaskingCapabilities($data);
-        $data['id'] = $id;
+        // $data['id'] = $id;
         // if (isset($request['DataStreams']) && $request['DataStreams'] != null) {
         //     $dsRepresentation = $request['DataStreams'];
         //     //nó đang ở dạng mảng datastream
@@ -324,24 +384,31 @@ class EntityCreation
     }
     protected function createTask(array $request): int
     {
-        $thing_id = $request['thing_id'] ?? null;
-        $actuator_id = $request['actuator_id'] ?? null;
-        if (!$thing_id || !$actuator_id) {
-            throw new Exception('invalid Actuator or Thing', 400);
-        }
-        $query = DB::table(TablesName::TASKINGCAPABILITY)
-            ->where('actuator_id', $actuator_id)
-            ->where('thing_id', $thing_id)
-            ->get('id')
-            ->toArray();
-        $taskingParameters =  (int)$request['taskingParameters'] ?? null;
-        //check tasking Parameters
+        if (!isset($request['TaskingCapability']['id']))
+            throw new Exception("TaskingCapability is invalid, id of TaskingCapability is required", 400);
+
+        $taskingCapabilityId = $request['TaskingCapability']['id'];
+
+        $isTaskingCapabilityExisting = DB::table(TablesName::TASKINGCAPABILITY)
+            ->where('id', '=', $taskingCapabilityId)
+            ->exists();
+
+        if (!$isTaskingCapabilityExisting)
+            throw new Exception("TaskingCapability is not found", 404);
+
+        $taskingParameters = !isset($request['taskingParameters']) ? null : json_encode($request['taskingParameters']);
+        $status = $request['xStatus'] ?? 'new';
+
         $data = [
-            'id' => $query[0]->id,
             'taskingParameters' => $taskingParameters,
+            'xStatus' => $status,
+            'taskingCapabilityId' => $taskingCapabilityId,
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
+
         $id = EntityInsertion::insertTask($data);
-        $data['id'] = $id;
+
         return $id;
     }
     protected function createActuator(array $request): int
@@ -358,6 +425,23 @@ class EntityCreation
             'encodingType' => $encodingType,
         ];
         $id = EntityInsertion::insertActuator($data);
+        return $id;
+    }
+    protected function createLocationEntity(array $request): int
+    {
+
+        $name = $request['name'] ?? null;
+        $description = $request['description'] ?? null;
+        $coordinates = $request['coordinates'] ?? null;
+        if ($name == null || $description == null || $coordinates == null) {
+            throw new Exception('invalid Location property data: coordinates, name and description are required', 400);
+        }
+        $data = [
+            'name' => $name,
+            'description' => $description,
+            'coordinates' => $coordinates,
+        ];
+        $id = EntityInsertion::insertLocation($data);
         $data['id'] = $id;
         return $id;
     }
@@ -411,46 +495,51 @@ class EntityCreation
     protected function createDataStream(array $request): int
     {
         $parent = $this->parent;
+        $sensorId = null;
         if (isset($request['Sensor'])) {
             $sensor = $request['Sensor'];
-        } else {
-            $sensor = null;
-            // if ($parent['name'] == Sensor::PATH_VARIABLE_NAME) {
-            //     $sensor = ['id' => $parent['id']];
-            // } else {
-            //     throw new Exception('Sensor id of Data Stream is not exist', 404);
-            // }
+            if (isset($sensor['id'])) {
+                $isSensorExisting = DB::table(TablesName::SENSOR)
+                    ->where("id", "=", $sensor['id'])
+                    ->exists();
+                if (!$isSensorExisting)
+                    throw new Exception("Sensor is not found", 404);
+                $sensorId = $sensor['id'];
+            } else {
+                $newSensorId = $this->createSensor($sensor);
+                $sensorId = $newSensorId;
+            }
         }
 
+        $thingId = null;
         if (isset($request['Thing'])) {
             $thing = $request['Thing'];
-        } else {
-            $thing = null;
-            // if ($parent['name'] == Thing::PATH_VARIABLE_NAME) {
-            //     $thing = ['id' => $parent['id']];
-            // } else {
-            //     throw new Exception('Thing id of Data Stream is not exist', 404);
-            // }
+            if (isset($thing['id'])) {
+                $isThingExisting = DB::table(TablesName::THING)
+                    ->where("id", "=", $thing['id'])
+                    ->exists();
+                if (!$isThingExisting)
+                    throw new Exception("Thing is not found", 404);
+                $thingId = $thing['id'];
+            } else {
+                $newThingId = $this->createThing($thing);
+                $thingId = $newThingId;
+            }
         }
 
         $inputs = [
-            'sensorId' => $sensor,
-            'thingId' => $thing,
+            'sensorId' => $sensorId,
+            'thingId' => $thingId,
             'name' => $request['name'],
             'description' => $request['description'],
             'observationType' => $request['observationType'] ?? 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_ComplexObservation',
-            // 'unitOfMeasurement' => $request['unitOfMeasurement'] ?? null,
+            'unitOfMeasurement' => $request['UnitOfMeasurements'] ?? null,
             // 'observations' => $request['Observations'] ?? null,
             // 'observedProperty' => $request['ObservedProperty'] ?? null,
             // 'multiObservationDataType' => $request['multiObservationDataType'] ?? null
         ];
         $id = EntityInsertion::insertDataStream($inputs, $this->header);
-        EntityInsertion::insertObservation([
-            'dataStreamId' => $id,
-            'result' => [
-                0
-            ]
-        ]);
+
         return $id;
     }
 

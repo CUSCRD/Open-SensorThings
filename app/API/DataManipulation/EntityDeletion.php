@@ -83,27 +83,22 @@ class EntityDeletion
 
     protected static function deleteMeasurementUnit(array $id)
     {
-        $mJoinName = MeasurementUnit::JOIN_NAME;
-        $dsmu = "dsmu";
-        $m_Table = MeasurementUnit::TABLE_NAME;
-        $idDS_DB = DB::table($m_Table, $mJoinName)
-            ->join(TablesName::DATA_STREAM_MEASUREMENT_UNIT . ' as ' . $dsmu, $mJoinName . ".id", '=', $dsmu . '.unitId')
-            ->whereIn($mJoinName . '.id', $id)->get($dsmu . '.dataStreamId');
-        $idDS = array_values(json_decode(json_encode($idDS_DB), true));
-        static::deleteEntity(MultiDataStream::TABLE_NAME, $idDS);
-        static::deleteEntity($m_Table, $id);
+        DB::table(TablesName::DATA_STREAM_MEASUREMENT_UNIT)
+            ->where('unitId', '=', $id)
+            ->delete();
+        static::deleteEntity(TablesName::MEASUREMENT_UNIT, $id);
     }
 
     protected static function deleteObservationType(array $id)
     {
         $otJoinName = ObservationType::JOIN_NAME;
-        $otTable = ObservationType::TABLE_NAME;
+        $otTable = TablesName::OBSERVATION_TYPE;
         $dsmot = 'dsmot';
         $idDS_DB = DB::table($otTable, $otJoinName)
             ->join(TablesName::DATA_STREAM_MULTI_OBSERVATION_TYPE . ' as ' . $dsmot, $otJoinName . ".id", '=', $dsmot . '.observationType')
             ->whereIn($otJoinName . '.id', $id)->get($dsmot . '.dataStreamId');
         $idDS = array_values(json_decode(json_encode($idDS_DB), true));
-        static::deleteEntity(MultiDataStream::TABLE_NAME, $idDS);
+        static::deleteEntity(TablesName::MULTI_DATA_STREAM, $idDS);
         static::deleteEntity($otTable, $id);
     }
 

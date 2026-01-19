@@ -13,14 +13,18 @@ use App\API\EntityGetter\ObservedProperty;
 use App\API\EntityGetter\Sensor;
 use App\API\EntityGetter\TaskingCapabilities;
 use App\API\EntityGetter\Thing;
+use App\API\EntityGetter\Location;
+use App\API\EntityGetter\Task;
 use App\API\Helpers\EntityPathRequest;
 use App\API\Helpers\EntityPropertyGetter;
+use App\Constant\TaskStatus;
 use App\Http\Controllers\API\GetController;
 use App\Http\Controllers\API\IoTController;
 use Exception;
 use Facade\Ignition\Tabs\Tab;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EntityModification
 {
@@ -60,9 +64,10 @@ class EntityModification
                 case ObservationType::PATH_VARIABLE_NAME:
                 case ObservedProperty::PATH_VARIABLE_NAME:
                 case Thing::PATH_VARIABLE_NAME:
+                case Location::PATH_VARIABLE_NAME:
                 case 'encodingtypes':
                     break;
-                    //các entity có thuộc tính dạng danh sách
+                //các entity có thuộc tính dạng danh sách
                 case MultiDataStream::PATH_VARIABLE_NAME:
                     $updateArray = static::updateDataStream($id, $updateArray);
                     break;
@@ -71,6 +76,9 @@ class EntityModification
                     break;
                 case TaskingCapabilities::PATH_VARIABLE_NAME:
                     $updateArray = static::updateTaskingCap($updateArray, $id);
+                    break;
+                case Task::PATH_VARIABLE_NAME:
+                    $updateArray = static::updateTask($id, $updateArray);
                     break;
                 default:
                     throw new Exception('path param ' . $analyze['entity'] . ' is not supported', 405);
@@ -164,24 +172,72 @@ class EntityModification
     public static function updateDataStream(int $id, array $update): array
     {
         //cập nhật theo tên đơn vị
-        if (key_exists('unitOfMeasurement', $update)) {
-            $unitOfMeasurement = $update['unitOfMeasurement'];
-            unset($update['unitOfMeasurement']);
+        if (key_exists('UnitOfMeasurement', $update)) {
+            $unitOfMeasurement = $update['UnitOfMeasurement'];
+            unset($update['UnitOfMeasurement']);
             if ($unitOfMeasurement != null) {
-                DB::table(TablesName::DATA_STREAM_MEASUREMENT_UNIT)->where('dataStreamId', '=', $id)->delete();
                 foreach ($unitOfMeasurement as $item) {
-                    //tìm trong DB
-                    $queryUnit = DB::table(TablesName::MEASUREMENT_UNIT)->where('id', '=', $item['id'])->get(['id']);
-                    if (count($queryUnit) > 0) {
-                        $unitId = $queryUnit[0]->id;
-                        DB::table(TablesName::DATA_STREAM_MEASUREMENT_UNIT)->insert([
-                            'unitId' => $unitId,
-                            'dataStreamId' => $id
-                        ]);
-                    } else {
-                        throw new Exception('measurement unit id is not exist', 404);
-                    }
+                    if (!isset($item['action']))
+                        throw new Exception('measurement unit action is invalid', 400);
+
+                    if ($item['action'] == 'add') {
+                        $foundUnitMeasurement = DB::table(TablesName::MEASUREMENT_UNIT)
+                            ->find($item['id'], ['id']);
+                        if (!$foundUnitMeasurement)
+                            throw new Exception('Unit of Measurement is not found', 404);
+
+                        $isUnitOfMeasurementLinked =  DB::table(TablesName::DATA_STREAM_MEASUREMENT_UNIT)
+                            ->where('unitId', '=', $foundUnitMeasurement->id)
+                            ->where('dataStreamId', '=', $id)
+                            ->exists();
+
+                        if (!$isUnitOfMeasurementLinked)
+                            DB::table(TablesName::DATA_STREAM_MEASUREMENT_UNIT)->insert([
+                                'unitId' => $foundUnitMeasurement->id,
+                                'dataStreamId' => $id
+                            ]);
+                    } else if ($item['action'] == 'remove') {
+                        DB::table(TablesName::DATA_STREAM_MEASUREMENT_UNIT)
+                            ->where('dataStreamId', '=', $id)
+                            ->where('unitId', '=', $item['id'])
+                            ->delete();
+                    } else
+                        throw new Exception('measurement unit action is invalid, action is "add" or "remove"', 400);
+                    // throw new Exception('measurement unit id is not exist', 404);
                 }
+            }
+        }
+
+        // cập nhật sensor
+        if (key_exists('Sensor', $update)) {
+            $sensor = $update['Sensor'];
+            unset($update['Sensor']);
+            if (isset($sensor['id'])) {
+                $isSensorExisting = DB::table(TablesName::SENSOR)
+                    ->where('id', '=', $sensor['id'])
+                    ->exists();
+                if (!$isSensorExisting)
+                    throw new Exception("sensor is not found", 404);
+                $update['sensorId'] = $sensor['id'];
+            } else {
+                $name = $sensor['name'] ?? null;
+                $description = $sensor['description'] ?? null;
+                $encodingType = $sensor['encodingType'] ?? null;
+                $metadata = $sensor['metadata'] ?? null;
+                if ($name == null || $encodingType == null) {
+                    throw new Exception('invalid sensor property data: name or description or encoding type', 400);
+                }
+
+                $data = [
+                    'name' => $name,
+                    'description' => $description,
+                    'encodingType' => $encodingType,
+                    'metadata' => $metadata,
+                ];
+
+                $newSensorId = EntityInsertion::insertSensor($data);
+
+                $update['sensorId'] = $newSensorId;
             }
         }
 
@@ -213,12 +269,11 @@ class EntityModification
         }
 
         //các trường trong bảng
-
-        if (isset($update['observationType']) && $update['observationType'] != null) {
-            if (is_string($update['observationType'])) {
-                $idObservationType = DB::table(ObservationType::TABLE_NAME)->where('value', '=', $update['observationType'])->get('id');
+        if (isset($update['ObservationType']) && $update['ObservationType'] != null) {
+            if (is_string($update['ObservationType'])) {
+                $idObservationType = DB::table(ObservationType::TABLE_NAME)->where('value', '=', $update['ObservationType'])->get('id');
                 if (count($idObservationType) > 0) {
-                    $update['observationType'] = $idObservationType[0]->id;
+                    $update['ObservationType'] = $idObservationType[0]->id;
                 } else {
                     throw new Exception('observation value is not exists', 404);
                 }
@@ -279,5 +334,18 @@ class EntityModification
         } else {
             throw new Exception('invalid updating path', 400);
         }
+    }
+
+    public static function updateTask($id, $update)
+    {
+        $id = (int) $id;
+        $taskStatuses = TaskStatus::getConstants();
+        $isStatusValid = isset($update['xStatus']) && array_key_exists($update['xStatus'], $taskStatuses);
+        if (!$isStatusValid)
+            throw new Exception("xStatus is invalid", 400);
+
+        $update['updated_at'] = now();
+
+        return $update;
     }
 }

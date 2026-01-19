@@ -125,10 +125,10 @@ class EntityInsertion
                     'resultTime' => $data['resultTime'] ?? OgcUtil::now(),
                     'validTime' => $data['validTime'] ?? null
                 ]);
-                DB::table(TablesName::OBSERVATION)
-                    ->where('dataStreamId', '=', $data['dataStreamId'])
-                    ->where('resultTime', '<', Carbon::now('GMT+7')->subWeek(2))
-                    ->delete();
+                // DB::table(TablesName::OBSERVATION)
+                //     ->where('dataStreamId', '=', $data['dataStreamId'])
+                //     ->where('resultTime', '<', Carbon::now('GMT+7')->subWeek(2))
+                //     ->delete();
                 return $id;
             } catch (Exception $exception) {
                 throw new Exception('error while inserting observation', 400);
