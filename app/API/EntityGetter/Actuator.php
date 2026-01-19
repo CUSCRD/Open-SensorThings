@@ -66,7 +66,7 @@ class Actuator extends BaseEntity
         return static::joinTable(
             $builder,
             static::JOIN_NAME,
-            TaskingCapabilities::TABLE_NAME,
+            TablesName::TASKINGCAPABILITY,
             TaskingCapabilities::JOIN_NAME,
             'id',
             'actuator_id'
@@ -133,7 +133,7 @@ class Actuator extends BaseEntity
             case Location::PATH_VARIABLE_NAME:
                 $builder = static::toLocation($builder);
                 break;
-                //Tasking
+            //Tasking
             case TaskingCapabilities::PATH_VARIABLE_NAME:
                 $builder = static::toTaskingCap($builder);
                 break;

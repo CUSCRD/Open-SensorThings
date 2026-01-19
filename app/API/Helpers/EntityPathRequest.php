@@ -3,6 +3,7 @@
 
 namespace App\API\Helpers;
 
+use App\API\EntityGetter\Task;
 use App\API\EntityGetter\TaskingCapabilities;
 use App\Constant\PathName;
 use App\Constant\TablesName;
@@ -122,7 +123,8 @@ class EntityPathRequest
         if ($pathArr) {
             $result = [];
             $pathParams = [];
-            if (str_contains($pathArr[0], "task")) {
+            // if (str_contains($pathArr[0], "task")) { v2.0
+            if (str_contains($pathArr[0], Task::PATH_VARIABLE_NAME)) {
                 if (!($id = static::hasNeededID($pathArr[0], 'actuator_id', 'thing_id'))) {
                     throw new Exception('something went wrong', 403);
                 }
@@ -132,7 +134,8 @@ class EntityPathRequest
                     throw new Exception('something went wrong', 403);
                 }
 
-                $pathArr[0] = 'task(' . $taskingCapID . ')';
+                // $pathArr[0] = 'task(' . $taskingCapID . ')'; v2.0
+                $pathArr[0] = Task::PATH_VARIABLE_NAME . '(' . $taskingCapID . ')';
             };
 
             if (str_contains($pathArr[0], "datastreams")) {

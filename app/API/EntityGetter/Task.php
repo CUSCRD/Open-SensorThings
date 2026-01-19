@@ -16,10 +16,12 @@ class Task extends BaseEntity
     [
         self::JOIN_NAME . '.taskingParameters',
         self::JOIN_NAME . '.id',
+        self::JOIN_NAME . '.xStatus',
     ];
     public const PROPERTIES = [
         'taskingParameters',
         'id',
+        'xStatus'
     ];
     // public const PATH_VARIABLE_NAME = 'task'; v2.0
     public const PATH_VARIABLE_NAME = 'tasks';
@@ -32,7 +34,7 @@ class Task extends BaseEntity
         return static::joinTable(
             $builder,
             static::JOIN_NAME,
-            TaskingCapabilities::TABLE_NAME,
+            TablesName::TASKINGCAPABILITY,
             TaskingCapabilities::JOIN_NAME,
             'id',
             'id'
@@ -97,7 +99,7 @@ class Task extends BaseEntity
             case ObservedProperty::PATH_VARIABLE_NAME:
                 $builder = static::toObservedProperty($builder);
                 break;
-                //Tasking
+            //Tasking
             case TaskingCapabilities::PATH_VARIABLE_NAME:
                 $builder = static::toTaskingCap($builder);
                 break;

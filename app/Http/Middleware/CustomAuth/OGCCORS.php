@@ -25,7 +25,7 @@ class OGCCORS
         //hoặc dấu sao chấp nhận mọi ip
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: Token, Content-Type, X-Auth-Token, Authorization, Origin');
-        header('Access-Control-Allow-Methods: POST, PUT, GET, PATCH');
+        header('Access-Control-Allow-Methods: *');
 
 
         return $next($request);

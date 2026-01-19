@@ -64,7 +64,7 @@ class Sensor extends BaseEntity
         $builder = static::joinTable(
             $builder,
             static::JOIN_NAME,
-            MultiDataStream::TABLE_NAME,
+            TablesName::MULTI_DATA_STREAM,
             MultiDataStream::JOIN_NAME,
             'id',
             'sensorId'
@@ -139,7 +139,7 @@ class Sensor extends BaseEntity
             case ObservedProperty::PATH_VARIABLE_NAME:
                 $builder = static::toObservedProperty($builder);
                 break;
-                //tasking
+            //tasking
             case Actuator::PATH_VARIABLE_NAME:
                 $builder = static::toActuator($builder);
                 break;

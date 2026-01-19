@@ -15,28 +15,41 @@ class CreateTaskTable extends Migration
      */
     public function up()
     {
+        // Khi tạo mới DB 
         Schema::create('task', function (Blueprint $table) {
             $table->id();
-            $table->integer('taskingParameters');
+            $table->unsignedBigInteger('taskingCapabilityId');
+            $table->json('taskingParameters');
+            $table->enum('xStatus', ['new', 'processed', 'completed'])->default('new');
             $table->timestamps();
 
-            $table->foreign('id')
+            // Foreign key constraint
+            $table->foreign('taskingCapabilityId')
                 ->references('id')
                 ->on(TablesName::Tasking_capability)
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
         });
 
-        DB::table(TablesName::TASK)
-            ->insert([
-                'id' => 11,
-                'taskingParameters' => -1
-            ]);
-            DB::table(TablesName::TASK)
-            ->insert([
-                'id' => 19,
-                'taskingParameters' => -1
-            ]);
+        // Dữ liệu mẫu (seed)
+        DB::table(TablesName::TASK)->insert([
+            [
+                'id' => 1,
+                'taskingCapabilityId' => 1,
+                'taskingParameters' => json_encode(['target' => 'fan', 'value' => 'on']),
+                'xStatus' => 'new',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'taskingCapabilityId' => 2,
+                'taskingParameters' => json_encode(['target' => 'light', 'value' => 'off']),
+                'xStatus' => 'processed',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
     }
 
     /**
@@ -46,6 +59,6 @@ class CreateTaskTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('_task');
+        Schema::dropIfExists('task');
     }
 }

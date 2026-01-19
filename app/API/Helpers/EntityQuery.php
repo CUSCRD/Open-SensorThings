@@ -105,10 +105,13 @@ class EntityQuery
      *
      * [Note: Adapted from OData 4.0-Protocol 11.2.5.4]
      * */
-    public static function skip(Builder $builder, $skip): Builder
+    public static function skip(Builder $builder, $skip, int $total): Builder
     {
         if ($skip == (int)$skip && $skip >= 0) {
-            return $builder->skip($skip);
+            if ($skip >= $total)
+                throw new Exception("skip value exceeds the total number of records");
+            else
+                return $builder->skip($skip);
         } else {
             throw new Exception("skip value must be non-negative integer");
         }
@@ -198,7 +201,8 @@ class EntityQuery
         $result = $resultHandleSelect['result'];
         // return ($result); v2.0
         $components = $resultHandleSelect['components'];
-        $count = $resultHandleSelect['count'] ?? null;
+        // $count = $resultHandleSelect['count'] ?? null; v2.0
+        $count = $max ?? null;
         //có expand
         if ($isExpand) {
             static::expand($controller, $idRebuild, $cloneBuilder, $requestUrl, $closestCollectionName, $result, $requestParameter);
@@ -216,13 +220,16 @@ class EntityQuery
         }
         if (isset($requestParameter['order']) && $requestParameter['order'] != '') {
             static::orderBy($controller, $builder, $requestParameter['order'], $closestCollectionName);
-        } else {
-            // $builder->orderBy('id', 'desc'); v2.0
-            // nếu k có order trong query string thì để thứ tự mặc định khi lấy trong db ra để tránh lỗi
-            // sử dụng mệnh đề ORDER BY với cột không nằm trong danh sách SELECT khi sử dụng DISTINCT
-            // do đó nếu k chỉ định order thì sẽ k thực hiện gì cả
-            // $builder->orderBy('id');
         }
+        // else { v2.0
+        //     $builder->orderBy('id', 'desc');
+        //     nếu k có order trong query string thì để thứ tự mặc định khi lấy trong db ra để tránh lỗi
+        //     sử dụng mệnh đề ORDER BY với cột không nằm trong danh sách SELECT khi sử dụng DISTINCT
+        //     do đó nếu k chỉ định order thì sẽ k thực hiện gì cả
+        // }
+
+        // $total = $builder->distinct()->get(EntityPropertyGetter::getJoinName($closestCollectionName) . '.' . 'id')->count();
+
         if (isset($requestParameter['top']) && $requestParameter['top'] != '') {
             if (is_numeric($requestParameter['top'])) {
                 static::top($builder, $requestParameter['top']);
@@ -245,7 +252,7 @@ class EntityQuery
         $cloneBuilder = $builder->clone();
         $max = $builder->count();
         if (isset($requestParameter['skip']) && $requestParameter['skip'] != '') {
-            static::skip($builder, $requestParameter['skip']);
+            static::skip($builder, $requestParameter['skip'], $max);
         }
         return ['cloneBuilder' => $cloneBuilder, 'max' => $max];
     }
@@ -253,13 +260,14 @@ class EntityQuery
     /**
      * @throws Exception
      */
-    private static function exportResult(array $result, string $requestUrl, int $max, array $requestParameter = null, bool $expandId = null, array $component = null, array $count = null): array
+    private static function exportResult(array $result, string $requestUrl, int $max, array $requestParameter = null, bool $expandId = null, array $component = null, int $count = null): array
     {
-        //count xảy ra vấn đề
-        $countEntity = $count == null ? static::countEntity(count($result), $requestParameter) : $count;
+        // đổi kiểu dữ liệu của biến $count từ array thành int
+        // $countEntity = $count == null ? static::countEntity(count($result), $requestParameter) : $count; v2.0
+        $countEntity = static::countEntity($count, $requestParameter);
         if ($expandId == null) {
             $result = ['value' => $result];
-            // $result = [$result];
+            // $result = [$result]; v2.0
         }
         $paging = static::paging($requestUrl, $max, $requestParameter);
         if ($component != null) {

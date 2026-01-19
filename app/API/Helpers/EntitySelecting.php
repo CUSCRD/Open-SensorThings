@@ -10,6 +10,7 @@ use App\API\EntityGetter\Observation;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class EntitySelecting
 {
@@ -23,7 +24,20 @@ class EntitySelecting
     {
         try {
             $joinName = EntityPropertyGetter::getJoinName($closestCollectionName);
-            $ids = (clone $builder)->distinct()->get($joinName . '.' . 'id');
+            // $ids = (clone $builder)->distinct()->get($joinName . '.' . 'id'); v2.0
+            $ids = null;
+            // select những cột mà được chọn để order
+            if (isset($requestParameter['order']) && $requestParameter['order'] != '') {
+                $tempBuilder = (clone $builder);
+                $sqlQuery = Str::replaceArray('?', $tempBuilder->getBindings(), $tempBuilder->toSql());
+                $stringSelect = static::getValueOrderBy($sqlQuery);
+                $ids = $tempBuilder->selectRaw($stringSelect)
+                    ->addSelect($joinName . '.' . 'id')
+                    ->distinct()
+                    ->get($joinName . '.' . 'id');
+            } else {
+                $ids = (clone $builder)->distinct()->get($joinName . '.' . 'id');
+            }
             $idRebuild = [];
             foreach ($ids as $itemIds) {
                 array_push($idRebuild, $itemIds->id);
@@ -184,8 +198,14 @@ class EntitySelecting
         foreach ($selectedProperty as $item) {
             if (in_array($item, $targetProperties)) {
                 //có thuộc tính
-                $key = array_search($item, $targetProperties);
-                array_push($newSelected, $targetJoinGet[$key]);
+                // $key = array_search($item, $targetProperties);
+                // array_push($newSelected, $targetJoinGet[$key]);
+                foreach ($targetJoinGet as $joinItem) {
+                    if (strpos($joinItem, $item) !== false) {
+                        $newSelected[] = $joinItem;
+                        break; // Assuming we only want the first match
+                    }
+                }
             } else {
                 $newSelected = static::nestedSelection($controller, $builder, $item, $newSelected);
             }
@@ -368,5 +388,33 @@ class EntitySelecting
         } else {
             throw new Exception('not support format ' . $format, 405);
         }
+    }
+
+    /**
+     * Cắt chuỗi sql query để lấy ra giá trị của mệnh đề ORDER BY
+     * 
+     * @param string $sqlQuery câu truy vấn SQL.
+     * @return string giá trị của mệnh đề ORDER BY
+     */
+    static function getValueOrderBy(string $sqlQuery)
+    {
+        $orderKeyword = "order by";
+        $limitKeyword = "limit";
+        $ascendingKeyword = "asc";
+        $descendingKeyword = "desc";
+        $length = 0;
+        $orderPos = strrpos($sqlQuery, $orderKeyword) + strlen($orderKeyword);
+        $limitPos = strrpos($sqlQuery, $limitKeyword);
+
+        if ($limitPos !== false) {
+            $length = $limitPos -  $orderPos;
+        } else {
+            $length = strlen($sqlQuery);
+        }
+        $valueOfOrderClause = str_replace($ascendingKeyword, "", substr($sqlQuery, $orderPos, $length));
+        $valueOfOrderClause = str_replace($descendingKeyword, "", $valueOfOrderClause);
+        $valueOfOrderClause = trim($valueOfOrderClause);
+
+        return $valueOfOrderClause;
     }
 }

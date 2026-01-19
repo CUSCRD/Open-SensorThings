@@ -17,7 +17,8 @@ class User extends Authenticatable
         'phone'
     ];
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
     protected $table = TablesName::Users;
     public function roles()
@@ -74,7 +75,6 @@ class User extends Authenticatable
             ->join($nametable, $first, $operation, $second)
             ->select($nametable . '.*')
             ->get();
-        dd($query->toArray());
     }
 
     public static function select($nametable, $first, $operation, $second)
